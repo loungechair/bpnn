@@ -67,11 +67,6 @@ BackpropTrainingAlgorithm::InitializeNetwork()
 void
 BackpropTrainingAlgorithm::Train()
 {
-  // XOR patterns
-  //std::vector<dblvec> input{ { 0, 0 },{ 0, 1 },{ 1, 0 },{ 1, 1 } };
-  //std::vector<dblvec> target{{-10}, {3}, {1}, {-1.2}};
-  //std::vector<dblvec> target{ { -2, -2 },{ -3, 2 },{ 4, -2 },{ 2, 4 } };
-
   std::vector<dblvec> input{
     { 0, 0, 0, 0},
     { 0, 1, 0, 1},
