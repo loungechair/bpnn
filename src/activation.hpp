@@ -64,8 +64,11 @@ private:
 class LinearActivation : public ActivationFunction
 {
 public:
+  LinearActivation(double slope_use = 1.0) : slope(slope_use) {}
 
 private:
+  double slope;
+
   double f_value(double x) const override { return x; }
   double df_value(double x, double fx) const override { return 1; }
 };
