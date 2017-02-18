@@ -13,6 +13,9 @@
 *.dylib
 *.dll
 
+# C++ Header Dependency files
+*.dep
+
 # Fortran module files
 *.mod
 *.smod
@@ -27,3 +30,4 @@
 *.exe
 *.out
 *.app
+nn
