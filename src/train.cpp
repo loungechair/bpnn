@@ -15,8 +15,9 @@ BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
                                                      double learning_rate_use,
                                                      std::shared_ptr<ErrorFunction> error_fn_use)
   : ntr(network_use),
+    error_fn(error_fn_use),
     learning_rate(learning_rate_use),
-    error_fn(error_fn_use)
+    max_epochs(50000)
 {
   const auto& x = ntr.GetLayers();
   const auto& y = ntr.GetConnections();
@@ -85,7 +86,7 @@ BackpropTrainingAlgorithm::Train()
     { 0.992, -1.75, -1.75, 0.992 }
   };
 
-  for (int epoch = 0; epoch < 50'000; ++epoch) {
+  for (int epoch = 0; epoch < max_epochs; ++epoch) {
     for (int pattern = 0; pattern < 4; ++pattern) {
       auto in = input[pattern];
       auto targ = target[pattern];

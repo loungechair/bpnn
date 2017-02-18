@@ -12,7 +12,7 @@ int
 main(int argc, char *argv[])
 {
   auto hid_act = std::make_shared<nn::SigmoidActivation>(-1, 1);
-  //auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
+  // auto out_act = std::make_shared<nn::SigmoidActivation>(-2, 2);
   auto out_act = std::make_shared<nn::LinearActivation>();
 
   nn::Network n({4, 6, 2, 6, 4}, hid_act, out_act);

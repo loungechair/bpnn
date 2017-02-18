@@ -94,6 +94,7 @@ private:
   std::shared_ptr<ErrorFunction> error_fn;
 
   double learning_rate;
+  int    max_epochs;
 };
 
 
@@ -162,12 +163,14 @@ private:
 
 
 
+
 struct BackpropTrainingParameters
 {
   double learning_rate;
   double momentum;
   bool   normalize_gradient;
 };
+
 
 
 class BackpropConnection
