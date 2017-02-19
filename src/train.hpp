@@ -215,12 +215,8 @@ public:
     const auto& delta = layer_to->GetDelta();
     const auto& activation = layer_from->GetActivation();
 
-    int idx = 0;
-    for (int row = 0; row < connection->Rows(); ++row) {
-      for (int col = 0; col < connection->Cols(); ++col) {
-        delta_w[idx++] += delta[row] * activation[col];
-      }
-    }
+    nn::matrix::accum_outer_product(&delta_w[0], 1.0, &delta[0], &activation[0], 
+                                    connection->Rows(), connection->Cols());
   }
 
   void UpdateWeights()
