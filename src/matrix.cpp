@@ -2,6 +2,12 @@
 
 #include <iostream>
 
+#if _WIN32
+#include <mkl_cblas.h>
+#else
+#include <cblas.h>
+#endif
+
 namespace nn
 {
 namespace matrix
