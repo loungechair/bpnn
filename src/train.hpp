@@ -1,7 +1,7 @@
 #pragma once
 
-
 #include "network.hpp"
+#include "input.hpp"
 
 #include <map>
 
@@ -83,9 +83,10 @@ public:
 
   void InitializeNetwork() override;
   void Train() override;
+
+  void SetTrainingData(input::TrainingData* td) { training_data = td; }
   
 private:
-  //  Network& network;
   NetworkTrainer ntr;
 
   std::vector<std::shared_ptr<BackpropLayer>> bp_layers;
@@ -95,6 +96,8 @@ private:
 
   double learning_rate;
   int    max_epochs;
+
+  nn::input::TrainingData* training_data;
 };
 
 

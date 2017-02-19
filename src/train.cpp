@@ -17,7 +17,8 @@ BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
   : ntr(network_use),
     error_fn(error_fn_use),
     learning_rate(learning_rate_use),
-    max_epochs(50000)
+    max_epochs(50000),
+    training_data(nullptr)
 {
   const auto& x = ntr.GetLayers();
   const auto& y = ntr.GetConnections();
@@ -67,24 +68,10 @@ BackpropTrainingAlgorithm::InitializeNetwork()
 void
 BackpropTrainingAlgorithm::Train()
 {
-  std::vector<dblvec> input{
-    { 0, 0, 0, 0},
-    { 0, 1, 0, 1},
-    { 0, 1, 1, 0},
-    { 1, 0, 0, 1}
-  };
-
-  std::vector<dblvec> target{
-    { -1.75, -1.75, -1.75, -1.75 },
-    { -1.75, 0.992, -1.75, 0.992 },
-    { -1.75, 0.992, 0.992, -1.75 },
-    { 0.992, -1.75, -1.75, 0.992 }
-  };
-
   for (int epoch = 0; epoch < max_epochs; ++epoch) {
-    for (int pattern = 0; pattern < 4; ++pattern) {
-      auto in = input[pattern];
-      auto targ = target[pattern];
+    for (int pattern = 0; pattern < training_data->in.size(); ++pattern) {
+      auto in = training_data->in[pattern];
+      auto targ = training_data->out[pattern];
 
       const auto& output = ntr.FeedForward(in);
 
@@ -107,9 +94,9 @@ BackpropTrainingAlgorithm::Train()
     }
   }
 
-  for (int pattern = 0; pattern < 4; ++pattern) {
-    auto in = input[pattern];
-    auto targ = target[pattern];
+  for (int pattern = 0; pattern < training_data->in.size(); ++pattern) {
+    auto in = training_data->in[pattern];
+    auto targ = training_data->out[pattern];
 
     const auto& output = ntr.FeedForward(in);
 

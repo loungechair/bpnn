@@ -11,6 +11,22 @@
 int
 main(int argc, char *argv[])
 {
+  nn::input::TrainingData training_data{
+    {
+      { 0, 0, 0, 0 },
+      { 0, 1, 0, 1 },
+      { 0, 1, 1, 0 },
+      { 1, 0, 0, 1 }
+    },
+    
+    {
+      { -1.75, -1.75, -1.75, -1.75 },
+      { -1.75, 0.992, -1.75, 0.992 },
+      { -1.75, 0.992, 0.992, -1.75 },
+      { 1.992, -1.75, -1.75, 0.992 }
+    }
+  };
+
   auto hid_act = std::make_shared<nn::SigmoidActivation>(-1, 1);
   // auto out_act = std::make_shared<nn::SigmoidActivation>(-2, 2);
   auto out_act = std::make_shared<nn::LinearActivation>();
@@ -20,13 +36,10 @@ main(int argc, char *argv[])
   auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(n, 0.1, std::make_shared<nn::SquaredError>());
 
   tr->InitializeNetwork();
-
-  auto err_fn = std::make_shared<nn::SquaredError>();
-
+  tr->SetTrainingData(&training_data);
+  
   auto start_time = std::chrono::high_resolution_clock::now();
-
   tr->Train();
-
   auto end_time = std::chrono::high_resolution_clock::now();
 
   std::chrono::duration<double> total_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time);

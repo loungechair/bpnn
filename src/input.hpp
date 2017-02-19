@@ -11,11 +11,34 @@
 #include <cstddef>
 #include <cmath>
 
+#include <cassert>
+
 namespace nn
 {
 namespace input
 {
 
+class TrainingData
+{
+public:
+  TrainingData(const std::vector<std::vector<double>>& input_use,
+               const std::vector<std::vector<double>>& output_use)
+    : in(input_use),
+      out(output_use)
+  {
+    assert(in.size() == out.size());
+  }
+
+  void AddPair(const std::vector<double>& in_use, const std::vector<double>& out_use)
+  {
+    in.push_back(in_use);
+    out.push_back(out_use);
+  }
+
+//private:
+  std::vector<std::vector<double>> in;
+  std::vector<std::vector<double>> out;
+};
 
 
 // template <typename DataType>
