@@ -8,7 +8,9 @@
 #  if _WIN32
 #    include <mkl_cblas.h>
 #  else
+extern "C" {
 #    include <cblas.h>
+}
 #  endif
 #endif
 

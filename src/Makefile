@@ -1,8 +1,8 @@
 # CXX=clang++ -std=c++14
 CXX=g++
-CXXFLAGS=-g -std=c++14
+CXXFLAGS=-O3 -std=c++14
 #CXXFLAGS=-O3 -Wall
-LDFLAGS=
+LDFLAGS=-L/usr/lib64/atlas -ltatlas
 
 sources = network.cpp \
 	matrix.cpp \
