@@ -17,7 +17,7 @@ BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
   : ntr(network_use),
     error_fn(error_fn_use),
     learning_rate(learning_rate_use),
-    max_epochs(5000),
+    max_epochs(50'000),
     training_data(nullptr)
 {
   const auto& x = ntr.GetLayers();
@@ -68,6 +68,10 @@ BackpropTrainingAlgorithm::InitializeNetwork()
 void
 BackpropTrainingAlgorithm::Train()
 {
+  if (!training_data) {
+    std::cerr << "No training data selected." << std::endl;
+    return;
+  }
   for (int epoch = 0; epoch < max_epochs; ++epoch) {
     for (int pattern = 0; pattern < training_data->in.size(); ++pattern) {
       auto in = training_data->in[pattern];

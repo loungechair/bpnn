@@ -21,6 +21,8 @@ namespace input
 class TrainingData
 {
 public:
+  TrainingData() {}
+
   TrainingData(const std::vector<std::vector<double>>& input_use,
                const std::vector<std::vector<double>>& output_use)
     : in(input_use),
@@ -39,37 +41,6 @@ public:
   std::vector<std::vector<double>> in;
   std::vector<std::vector<double>> out;
 };
-
-
-// template <typename DataType>
-// class ActivationPattern
-// {
-// public:
-//   ActivationPattern(const DataType& input_data_use, const std::vector<double>& activation_use);
-
-//   const DataType& GetData() const { return data; }
-//   const std::double<vector>& GetActivation() const { return activation; }
-
-// private:
-//   DataType data;
-//   std::vector<double> activation;
-// };
-
-
-
-
-// template <typename InputType> class InputEncoder;
-
-// template <typename InputType, typename OutputType>
-// class TrainingData
-// {
-// public:
-//   TrainingData(std::shared_ptr<InputEncoder<InputType>> input_encoder_use,
-//                std::shared_ptr<InputEncoder<OutputType>> output_encoder_use);
-// private:
-//   int num_training_pairs;
-// };
-
 
 
 
@@ -204,13 +175,13 @@ void CalculateFieldStatistic(int offset,
 template <typename CategoryType, typename InputDataType>
 void CalculateFieldStatistic(int offset,
                              const std::vector<InputDataType>& data,
-                             std::shared_ptr<CategoryStatistics<CategoryType>> stat)
+                             CategoryStatistics<CategoryType>& stat)
 {
   for (auto& item : data) {
     char* intype = (char*)(&item);
     CategoryType x = *(CategoryType *)(intype + offset);
 
-    stat->ProcessValue(x);
+    stat.ProcessValue(x);
   }
 }
 
@@ -233,7 +204,7 @@ public:
 
 
 #define nn_ADD_FIELD_ENCODER(encoder, structType, field, field_encoder) \
-  encoder->AddFieldEncoder(offsetof(structType, field), field_encoder)
+  encoder.AddFieldEncoder(offsetof(structType, field), field_encoder)
 
 
 template <typename InputType>

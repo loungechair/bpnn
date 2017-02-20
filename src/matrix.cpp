@@ -5,12 +5,14 @@
 #define USE_BLAS
 
 #ifdef USE_BLAS
-#  if _WIN32
+#  ifdef _WIN32
 #    include <mkl_cblas.h>
-#  else
+#  elif __linux__
 extern "C" {
 #    include <cblas.h>
 }
+#  else
+#    error "Unsupported OS!""
 #  endif
 #endif
 

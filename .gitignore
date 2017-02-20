@@ -29,6 +29,7 @@
 #VS2015 Garbage
 *.sdf
 *.vcxproj.filters
+*.opendb
 
 # Executables
 *.exe
