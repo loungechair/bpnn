@@ -17,7 +17,7 @@ BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
   : ntr(network_use),
     error_fn(error_fn_use),
     learning_rate(learning_rate_use),
-    max_epochs(50'000),
+    max_epochs(150'000),
     training_data(nullptr)
 {
   const auto& x = ntr.GetLayers();

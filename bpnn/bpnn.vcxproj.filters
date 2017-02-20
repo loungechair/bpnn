@@ -18,9 +18,6 @@
     <ClInclude Include="..\src\activation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\data.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\error.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

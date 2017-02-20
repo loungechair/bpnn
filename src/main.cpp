@@ -97,7 +97,7 @@ main(int argc, char *argv[])
   auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
   //auto out_act = std::make_shared<nn::LinearActivation>();
 
-  nn::Network n({4, 32, 32, 3}, hid_act, out_act);
+  nn::Network n({4, 48, 3}, hid_act, out_act);
   
   auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(n, 0.1, std::make_shared<nn::SquaredError>());
 
