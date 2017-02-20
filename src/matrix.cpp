@@ -12,7 +12,7 @@ extern "C" {
 #    include <cblas.h>
 }
 #  else
-#    error "Unsupported OS!""
+#    error "Unsupported OS!"
 #  endif
 #endif
 
