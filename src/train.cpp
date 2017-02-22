@@ -118,6 +118,17 @@ BackpropTrainingAlgorithm::Train()
 }
 
 
+BackpropLayer::BackpropLayer(NetworkTrainer& ntr_use, Layer* layer_use)
+  : ntr(ntr_use),
+    layer(layer_use),
+    activation(layer->GetActivation()),
+    activation_df(layer->Size()),
+    delta(layer->Size())
+{
+}
+
+
+
 void
 BackpropLayer::CalculateDelta()
 {
@@ -131,6 +142,50 @@ BackpropLayer::CalculateDelta()
   std::transform(std::begin(delta), std::end(delta), std::begin(activation_df), std::begin(delta),
                  std::multiplies<>());
 }
+
+
+void 
+BackpropLayer::CalculateDelta(const dblvector& target, std::shared_ptr<ErrorFunction> error_fn) // for output layer
+{
+  // // calcualte error into delta
+  std::transform(begin(activation), end(activation),
+    begin(target),
+    begin(delta),
+    [&](double x, double y) { return error_fn->dE(x, y); });
+
+  // scale by derivative of activation
+  std::transform(begin(delta), end(delta),
+    begin(activation_df),
+    begin(delta),
+    std::multiplies<double>());
+}
+
+BackpropConnection::BackpropConnection(std::shared_ptr<Connection> connection_use,
+                                       BackpropLayer* from,
+                                       BackpropLayer* to,
+                                       double learning_rate_use)
+  : connection(connection_use),
+    layer_from(from),
+    layer_to(to),
+    learning_rate(learning_rate_use),
+    weights(connection->GetWeights()),
+    delta_w(connection->Size(), 0),
+    delta_w_previous(connection->Size(), 0),
+    params{ .01, 0.9, false }
+{
+  to->AddIncomingConnection(this);
+  from->AddOutgoingConnection(this);
+}
+
+
+void
+BackpropConnection::AccumulateNetDelta(dblvector& delta)
+{
+  nn::accum_ATx(&delta[0], 1.0, &weights[0],
+                        &(layer_to->GetDelta()[0]),
+                        connection->Rows(), connection->Cols());
+}
+
 
 
 }

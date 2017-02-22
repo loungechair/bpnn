@@ -23,7 +23,7 @@ public:
   {
   }
 
-  dblvec FeedForward(const dblvec& input_pattern)
+  dblvector FeedForward(const dblvector& input_pattern)
   {
     return network.FeedForward(input_pattern);
   }
@@ -34,7 +34,7 @@ public:
   template <typename PtrType>
   double* GetLayerBiasPtr(PtrType layer) { return &(layer->bias[0]); }
   template <typename PtrType>
-  dblvec& GetLayerBias(PtrType layer) { return layer->bias; }
+  dblvector& GetLayerBias(PtrType layer) { return layer->bias; }
   double* GetLayerActivationPtr(std::shared_ptr<Layer> layer) { return &(layer->activation[0]); }
   double* GetLayerNetInputPtr(std::shared_ptr<Layer> layer) { return &(layer->net_input[0]); }
 
@@ -108,14 +108,7 @@ class BackpropLayer
   friend class BackpropTrainingAlgorithm;
   
 public:
-  BackpropLayer(NetworkTrainer& ntr_use, Layer* layer_use)
-    : ntr(ntr_use),
-      layer(layer_use),
-      activation(layer->GetActivation()),
-      activation_df(layer->Size()),
-      delta(layer->Size())
-  {
-  }
+  BackpropLayer(NetworkTrainer& ntr_use, Layer* layer_use);
 
   template <typename RngType>
   void InitializeBiases(RngType& randgen)
@@ -132,26 +125,13 @@ public:
 
   void CalculateDelta();
 
-  void CalculateDelta(const dblvec& target, std::shared_ptr<ErrorFunction> error_fn) // for output layer
-  {
-    // // calcualte error into delta
-    std::transform(begin(activation), end(activation),
-                   begin(target),
-                   begin(delta),
-                   [&](double x, double y) { return error_fn->dE(x, y); });
-
-    // scale by derivative of activation
-    std::transform(begin(delta), end(delta),
-                   begin(activation_df),
-                   begin(delta),
-                   std::multiplies<double>());
-  }
+  void CalculateDelta(const dblvector& target, std::shared_ptr<ErrorFunction> error_fn); // for output layer
 
   void AddIncomingConnection(BackpropConnection* c) { incoming.push_back(c); }
   void AddOutgoingConnection(BackpropConnection* c) { outgoing.push_back(c); }
 
-  const dblvec& GetDelta() const { return delta; }
-  const dblvec& GetActivation() const { return activation; }
+  const dblvector& GetDelta() const { return delta; }
+  const dblvector& GetActivation() const { return activation; }
 
 private:
   NetworkTrainer& ntr;
@@ -159,9 +139,9 @@ private:
   std::vector<BackpropConnection*> incoming;
   std::vector<BackpropConnection*> outgoing;
   
-  dblvec& activation;
-  dblvec activation_df; // derivative of activation function
-  dblvec delta;
+  dblvector& activation;
+  dblvector activation_df; // derivative of activation function
+  dblvector delta;
 };
 
 
@@ -182,19 +162,7 @@ public:
   BackpropConnection(std::shared_ptr<Connection> connection_use,
                      BackpropLayer* from,
                      BackpropLayer* to,
-                     double learning_rate_use)
-    : connection(connection_use),
-      layer_from(from),
-      layer_to(to),
-      learning_rate(learning_rate_use),
-      weights(connection->GetWeights()),
-      delta_w(connection->Size(), 0),
-      delta_w_previous(connection->Size(), 0),
-      params{.01, 0.9, false}
-  {
-    to->AddIncomingConnection(this);
-    from->AddOutgoingConnection(this);
-  }
+                     double learning_rate_use);
 
   template <typename RngType>
   void InitializeWeights(RngType& randgen)
@@ -202,20 +170,14 @@ public:
     std::transform(begin(weights), end(weights), begin(weights), std::ref(randgen));
   }
 
-  void AccumulateNetDelta(dblvec& delta)
-  {
-    nn::matrix::accum_ATx(&delta[0], 1.0, &weights[0],
-                          &(layer_to->GetDelta()[0]),
-                          connection->Rows(), connection->Cols());
-  }
-
+  void AccumulateNetDelta(dblvector& delta);
 
   void AccumulateGradients()
   {
     const auto& delta = layer_to->GetDelta();
     const auto& activation = layer_from->GetActivation();
 
-    nn::matrix::accum_outer_product(&delta_w[0], 1.0, &delta[0], &activation[0], 
+    nn::accum_outer_product(&delta_w[0], 1.0, &delta[0], &activation[0], 
                                     connection->Rows(), connection->Cols());
   }
 
@@ -236,9 +198,9 @@ private:
   
   double learning_rate;
 
-  dblvec&     weights;
-  dblvec      delta_w;
-  dblvec      delta_w_previous;
+  dblvector&     weights;
+  dblvector      delta_w;
+  dblvector      delta_w_previous;
 
   BackpropTrainingParameters params;
 };

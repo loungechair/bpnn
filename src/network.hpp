@@ -45,12 +45,12 @@ public:
     activation_fn = act_fn;
   }
   
-  void SetActivation(const dblvec& in)   { activation = in; } // for input layers
+  void SetActivation(const dblvector& in)   { activation = in; } // for input layers
   void CalculateActivation();                                 // for hidden layers
 
-  const dblvec& GetActivation() const { return activation; }
-  dblvec& GetActivation() { return activation; }
-  const dblvec& GetNetInput() const { return net_input; }
+  const dblvector& GetActivation() const { return activation; }
+  dblvector& GetActivation() { return activation; }
+  const dblvector& GetNetInput() const { return net_input; }
 
   const double* GetActivationPtr() const { return &activation[0]; }
 
@@ -63,9 +63,9 @@ public:
 
 private:
   const int size;
-  dblvec net_input;
-  dblvec activation;
-  dblvec bias;
+  dblvector net_input;
+  dblvector activation;
+  dblvector bias;
   std::shared_ptr<ActivationFunction> activation_fn;
 
   std::vector<Connection *> incoming;
@@ -96,13 +96,13 @@ public:
   int Cols() const { return cols; }
   int Size() const { return size; }
 
-  void AccumulateNetInput(dblvec& net_input)
+  void AccumulateNetInput(dblvector& net_input)
   {
-    nn::matrix::accum_Ax(&net_input[0], 1.0, &weights[0], layer_from->GetActivationPtr(), rows, cols);
+    nn::accum_Ax(net_input, 1.0, weights, layer_from->GetActivation(), rows, cols);
   }
 
 
-  dblvec& GetWeights() { return weights; }
+  dblvector& GetWeights() { return weights; }
 
 private:
   Layer* layer_from;
@@ -112,7 +112,7 @@ private:
   int    cols;
   int    size;
 
-  dblvec weights;
+  dblvector weights;
 };
 
 
@@ -138,12 +138,12 @@ public:
 
   int AddDefaultConnections();
 
-  dblvec FeedForward(const dblvec& input_pattern);
+  dblvector FeedForward(const dblvector& input_pattern);
 
-  const dblvec& GetActivation(int l) const { return layers[l]->GetActivation(); }
+  const dblvector& GetActivation(int l) const { return layers[l]->GetActivation(); }
   const double* GetActivationPtr(int l) const { return layers[l]->GetActivationPtr(); }
 
-  const dblvec& GetNetInput(int l) const { return layers[l]->GetNetInput(); }
+  const dblvector& GetNetInput(int l) const { return layers[l]->GetNetInput(); }
 
   std::vector<std::shared_ptr<Layer>>& GetLayers() { return layers; }
   std::vector<std::shared_ptr<Connection>>& GetConnections() { return connections; }

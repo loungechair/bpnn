@@ -18,10 +18,9 @@ extern "C" {
 
 namespace nn
 {
-namespace matrix
-{
 
-// y += alpha*Ax
+  
+  // y += alpha*Ax
 // A is rows x cols
 // x is cols x 1
 // y is rows x 1
@@ -49,6 +48,14 @@ accum_Ax(double* y, double alpha, const double* A, const double* x, int rows, in
 #endif
 }
 
+//y += alpha * Ax
+void
+accum_Ax(dblvector& y, double alpha, const dblvector& A, const dblvector& x, int rows, int cols)
+{
+#ifdef USE_BLAS
+  cblas_dgemv(CblasRowMajor, CblasNoTrans, rows, cols, alpha, &A[0], cols, &x[0], 1, 1.0, &y[0], 1);
+#endif
+}
 
 // y += alpha*ATx
 // A is rows x cols, so AT is cols x rows
@@ -92,5 +99,4 @@ accum_outer_product(double* A, double alpha, const double* x, const double* y, i
 }
 
 
-}
 }

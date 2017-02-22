@@ -12,12 +12,12 @@ namespace nn
 class ActivationFunction
 {
 public:
-  virtual void f(dblvec& fx, const dblvec& x) const
+  virtual void f(dblvector& fx, const dblvector& x) const
   {
     std::transform(std::begin(x), std::end(x), std::begin(fx), [&](auto y){ return this->f_value(y); });
   }
 
-  virtual void df(dblvec& dfx, const dblvec& x, const dblvec& fx) const
+  virtual void df(dblvector& dfx, const dblvector& x, const dblvector& fx) const
   {
     std::transform(std::begin(x), std::end(x),
                    std::begin(fx),
@@ -78,7 +78,7 @@ private:
 class SoftmaxActivation : public ActivationFunction
 {
 public:
-  virtual void f(dblvec& fx, const dblvec& x) const
+  virtual void f(dblvector& fx, const dblvector& x) const
   {
     total_value = std::accumulate(std::begin(x), std::end(x), 0.0,
                                   [](auto y, auto z) { return y + std::exp(y); });
@@ -86,7 +86,7 @@ public:
     std::transform(std::begin(x), std::end(x), std::begin(fx), [&](auto y){ return this->f_value(y); });
   }
 
-  virtual void df(dblvec& dfx, const dblvec& x, const dblvec& fx) const
+  virtual void df(dblvector& dfx, const dblvector& x, const dblvector& fx) const
   {
     std::transform(std::begin(x), std::end(x),
                    std::begin(fx),

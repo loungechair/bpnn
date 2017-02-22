@@ -61,8 +61,8 @@ Network::AddDefaultConnections()
 
 
 
-dblvec
-Network::FeedForward(const dblvec& input_pattern)
+dblvector
+Network::FeedForward(const dblvector& input_pattern)
 {
   layers[INPUT_LAYER]->SetActivation(input_pattern);
 

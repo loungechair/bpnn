@@ -93,6 +93,15 @@ main(int argc, char *argv[])
   //  }
   //};
 
+  nn::dblmatrix m(10, 10);
+  nn::dblvector v{ 1, 2, 3, 4, 5, 4, 3, 2, 1, 0 };
+  m.SetRowValues(5, v);
+  auto r = m.GetRow(5);
+  for (auto& p : r) {
+    std::cout << p << " -> ";
+  }
+  std::cout << std::endl;
+
   auto hid_act = std::make_shared<nn::SigmoidActivation>(-1, 1);
   auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
   //auto out_act = std::make_shared<nn::LinearActivation>();
