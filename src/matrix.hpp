@@ -56,7 +56,7 @@ public:
 
   dblvector GetRowValues(int row_num)
   {
-    auto range = GetRowRange();
+    auto range = GetRowRange(row_num);
     return dblvector(range.first, range.second);
   }
 
@@ -117,5 +117,20 @@ void accum_ATx(double *y, double alpha, const double* A, const double* x, int ro
 void
 accum_outer_product(double* A, double alpha, const double* x, const double* y, int rows, int cols);
 
+
+// matrix-matrix operations
+// A += B C
+template <typename T>
+void accum_A_BC(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
+// A += B C^T
+template <typename T>
+void accum_A_BCt(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
+// A += B^T C
+void accum_A_BtC();
+// y += A^T x
+void accum_y_Atx();
+// A += alpha B
+template <typename T>
+void accum_A_alphaB(Matrix<T>& A, T alpha, const Matrix<T>& B);
 
 } // namespace nn

@@ -20,7 +20,7 @@ namespace nn
 {
 
   
-  // y += alpha*Ax
+// y += alpha*Ax
 // A is rows x cols
 // x is cols x 1
 // y is rows x 1
@@ -96,6 +96,62 @@ accum_outer_product(double* A, double alpha, const double* x, const double* y, i
     }
   }
 #endif
+}
+
+
+
+
+// A += B C
+template <>
+void
+accum_A_BC(Matrix<float>& A, const Matrix<float>& B, const Matrix<float>& C)
+{
+  cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.Rows(), A.Cols(), B.Cols(),
+    1.0f, B.GetPtr(), B.Cols(), C.GetPtr(), C.Cols(), 1.0f, A.GetPtr(), A.Cols());
+}
+
+template <>
+void
+accum_A_BC(Matrix<double>& A, const Matrix<double>& B, const Matrix<double>& C)
+{
+  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.Rows(), A.Cols(), B.Cols(),
+    1.0, B.GetPtr(), B.Cols(), C.GetPtr(), C.Cols(), 1.0, A.GetPtr(), A.Cols());
+}
+
+
+
+// A += B C^T
+template <>
+void
+accum_A_BCt(Matrix<float>& A, const Matrix<float>& B, const Matrix<float>& C)
+{
+  cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, A.Rows(), A.Cols(), B.Cols(),
+    1.0f, B.GetPtr(), B.Cols(), C.GetPtr(), C.Cols(), 1.0f, A.GetPtr(), A.Cols());
+}
+
+template <>
+void
+accum_A_BCt(Matrix<double>& A, const Matrix<double>& B, const Matrix<double>& C)
+{
+  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, A.Rows(), A.Cols(), B.Cols(),
+    1.0, B.GetPtr(), B.Cols(), C.GetPtr(), C.Cols(), 1.0, A.GetPtr(), A.Cols());
+}
+
+
+
+// A += alpha B
+template <>
+void
+accum_A_alphaB(Matrix<float>& A, float alpha, const Matrix<float>& B)
+{
+  cblas_saxpy(A.Size(), alpha, B.GetPtr(), 1, A.GetPtr(), 1);
+}
+
+template <>
+void
+accum_A_alphaB(Matrix<double>& A, double alpha, const Matrix<double>& B)
+{
+  cblas_daxpy(A.Size(), alpha, B.GetPtr(), 1, A.GetPtr(), 1);
 }
 
 

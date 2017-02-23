@@ -95,10 +95,22 @@ main(int argc, char *argv[])
 
   nn::dblmatrix m(10, 10);
   nn::dblvector v{ 1, 2, 3, 4, 5, 4, 3, 2, 1, 0 };
-  m.SetRowValues(5, v);
-  auto r = m.GetRow(5);
+  m.SetAllRowValues(v);
+  auto r = m.GetRow(6);
   for (auto& p : r) {
     std::cout << p << " -> ";
+  }
+  std::cout << std::endl;
+
+  auto z = m.GetRowValues(1);
+  for (auto& p : z) {
+    std::cout << p << ", ";
+  }
+  std::cout << std::endl;
+
+  auto zz = m.GetColumnValues(1);
+  for (auto& p : zz) {
+    std::cout << p << ", ";
   }
   std::cout << std::endl;
 
