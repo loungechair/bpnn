@@ -152,8 +152,31 @@ template <>
 void
 accum_A_BtC(Matrix<double>& A, const Matrix<double>& B, const Matrix<double>& C)
 {
-  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.Rows(), A.Cols(), B.Cols(),
+  cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, A.Rows(), A.Cols(), B.Rows(),
     1.0, B.GetPtr(), B.Cols(), C.GetPtr(), C.Cols(), 1.0, A.GetPtr(), A.Cols());
+}
+
+
+
+// y += A^T x
+template <>
+void
+accum_y_Atx(typename Matrix<float>::VectorType& y,
+            const Matrix<float>& A,
+            const typename Matrix<float>::VectorType& x)
+{
+  cblas_sgemv(CblasRowMajor, CblasTrans, A.Rows(), A.Cols(), 1.0f,
+    A.GetPtr(), A.Cols(), &x[0], 1, 1.0f, &y[0], 1);
+}
+
+template <>
+void
+accum_y_Atx(typename Matrix<double>::VectorType& y,
+  const Matrix<double>& A,
+  const typename Matrix<double>::VectorType& x)
+{
+  cblas_dgemv(CblasRowMajor, CblasTrans, A.Rows(), A.Cols(), 1.0,
+    A.GetPtr(), A.Cols(), &x[0], 1, 1.0, &y[0], 1);
 }
 
 

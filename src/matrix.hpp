@@ -39,9 +39,9 @@ public:
 
   Matrix(int rows_use, int cols_use)
     : rows(rows_use),
-    cols(cols_use),
-    size(rows*cols),
-    data(size, 0)
+      cols(cols_use),
+      size(rows*cols),
+      data(size, 0)
   {
   }
 
@@ -75,6 +75,18 @@ public:
     std::copy(std::begin(values), std::end(values), GetRowRange(row_num).first);
   }
 
+  void SetData(const dblvector& values)
+  {
+    if (values.size() != size) {
+      std::cerr << "Invalid size" << std::endl;
+    }
+
+    std::copy(std::begin(values), std::end(values), std::begin(data));
+  }
+
+  void SetEntry(int row, int col, T value) { data[row * cols + col] = value; }
+  void SetEntry(int index, T value) { data[index] = value; }
+
   void SetAllRowValues(const dblvector& values)
   {
     for (int i = 0; i < rows; ++i) {
@@ -88,8 +100,8 @@ public:
 
   T* GetPtr() { return &data[0]; }
   const T* GetPtr() const { return &data[0]; }
-  T& GetRef() { return data; }
-  const T& GetRef() const { return data; }
+  std::vector<T>& GetRef() { return data; }
+  const std::vector<T>& GetRef() const { return data; }
 
   IteratorType begin() { return data.begin(); }
   IteratorType end() { return data.end(); }
@@ -141,7 +153,9 @@ void accum_A_BCt(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
 template <typename T>
 void accum_A_BtC(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
 // y += A^T x
-void accum_y_Atx();
+template <typename T>
+void accum_y_Atx(typename Matrix<T>::VectorType& y, const Matrix<T>& A,
+  const typename Matrix<T>::VectorType& x);
 // A += alpha B
 template <typename T>
 void accum_A_alphaB(Matrix<T>& A, T alpha, const Matrix<T>& B);
