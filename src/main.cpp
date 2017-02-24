@@ -93,27 +93,25 @@ main(int argc, char *argv[])
   //  }
   //};
 
-  nn::dblmatrix m(10, 10);
-  nn::dblvector v{ 1, 2, 3, 4, 5, 4, 3, 2, 1, 0 };
-  m.SetAllRowValues(v);
-  auto r = m.GetRow(6);
-  for (auto& p : r) {
-    std::cout << p << " -> ";
-  }
+  nn::dblmatrix B(3, 3);
+  B.SetRowValues(0, { 1, 2, 3 });
+  B.SetRowValues(1, { 4, 5, 6 });
+  B.SetRowValues(2, { 7, 8, 9 });
+  B.print();
   std::cout << std::endl;
 
-  auto z = m.GetRowValues(1);
-  for (auto& p : z) {
-    std::cout << p << ", ";
-  }
+  nn::dblmatrix C(3, 2);
+  C.SetRowValues(0, { 1, 2 });
+  C.SetRowValues(1, { 3, 4 });
+  C.SetRowValues(2, { 5, 6 });
+  C.print();
   std::cout << std::endl;
 
-  auto zz = m.GetColumnValues(1);
-  for (auto& p : zz) {
-    std::cout << p << ", ";
-  }
-  std::cout << std::endl;
+  nn::dblmatrix A(3, 2);
+  accum_A_BC(A, B, C);
+  A.print();
 
+  /*
   auto hid_act = std::make_shared<nn::SigmoidActivation>(-1, 1);
   auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
   //auto out_act = std::make_shared<nn::LinearActivation>();
@@ -131,5 +129,5 @@ main(int argc, char *argv[])
 
   std::chrono::duration<double> total_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time);
   std::cout << "Total time was " << total_time.count() << std::endl;
-
+  */
 }

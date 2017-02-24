@@ -139,6 +139,25 @@ accum_A_BCt(Matrix<double>& A, const Matrix<double>& B, const Matrix<double>& C)
 
 
 
+// A += B^T C
+template <>
+void
+accum_A_BtC(Matrix<float>& A, const Matrix<float>& B, const Matrix<float>& C)
+{
+  cblas_sgemm(CblasRowMajor, CblasTrans, CblasNoTrans, A.Rows(), A.Cols(), B.Rows(),
+    1.0f, B.GetPtr(), B.Cols(), C.GetPtr(), C.Cols(), 1.0f, A.GetPtr(), A.Cols());
+}
+
+template <>
+void
+accum_A_BtC(Matrix<double>& A, const Matrix<double>& B, const Matrix<double>& C)
+{
+  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A.Rows(), A.Cols(), B.Cols(),
+    1.0, B.GetPtr(), B.Cols(), C.GetPtr(), C.Cols(), 1.0, A.GetPtr(), A.Cols());
+}
+
+
+
 // A += alpha B
 template <>
 void

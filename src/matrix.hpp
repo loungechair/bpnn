@@ -54,13 +54,13 @@ public:
 
   RowType GetRow(int row_num) { return RowType(GetRowRange(row_num)); }
 
-  dblvector GetRowValues(int row_num)
+  VectorType GetRowValues(int row_num)
   {
     auto range = GetRowRange(row_num);
     return dblvector(range.first, range.second);
   }
 
-  dblvector GetColumnValues(int col_num)
+  VectorType GetColumnValues(int col_num)
   {
     dblvector values(cols);
     auto v = data.begin() + col_num;
@@ -94,6 +94,18 @@ public:
   IteratorType begin() { return data.begin(); }
   IteratorType end() { return data.end(); }
 
+
+  void print()
+  {
+    int idx = 0;
+    for (int r = 0; r < rows; ++r) {
+      for (int c = 0; c < cols; ++c) {
+        std::cout << data[idx++] << "\t";
+      }
+      std::cout << std::endl;
+    }
+  }
+
 private:
   int rows;
   int cols;
@@ -126,7 +138,8 @@ void accum_A_BC(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
 template <typename T>
 void accum_A_BCt(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
 // A += B^T C
-void accum_A_BtC();
+template <typename T>
+void accum_A_BtC(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
 // y += A^T x
 void accum_y_Atx();
 // A += alpha B
