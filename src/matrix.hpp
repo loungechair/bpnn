@@ -17,9 +17,10 @@ class Matrix
 {
 public:
   
-  typedef std::vector<T> VectorType;
-  typedef typename std::vector<T>::iterator IteratorType;
   typedef T ValueType;
+  typedef std::vector<T> VectorType;
+  typedef typename VectorType::iterator IteratorType;
+  typedef typename VectorType::const_iterator ConstIteratorType;
 
 
   class RowType
@@ -104,9 +105,10 @@ public:
   const std::vector<T>& GetRef() const { return data; }
 
   IteratorType begin() { return data.begin(); }
-  IteratorType end() { return data.end(); }
-
-
+  IteratorType end()   { return data.end(); }
+  ConstIteratorType begin() const { return data.begin(); }
+  ConstIteratorType end()   const { return data.end(); }
+  
   void print()
   {
     int idx = 0;

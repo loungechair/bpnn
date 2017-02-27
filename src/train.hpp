@@ -120,7 +120,11 @@ public:
 
   void CalculateActivationDerivative()
   {
-    layer->GetActivationFunction()->df(activation_df, layer->GetNetInput(), activation);
+    auto fn = layer->GetActivationFunction();
+    auto net_in = layer->GetNetInput();
+
+    std::transform(begin(net_in), end(net_in), begin(activation), begin(activation_df),
+                   [&](auto x, auto fx) { return fn->df(x, fx); });
   }
 
   void CalculateDelta();

@@ -30,7 +30,8 @@ Layer::CalculateActivation()
     in_conn->AccumulateNetInput(net_input);
   }
 
-  activation_fn->f(activation, net_input);
+  std::transform(begin(net_input), end(net_input), begin(activation),
+                 [&](auto& x) { return activation_fn->f(x); });
 }
 
 
