@@ -65,7 +65,7 @@ main(int argc, char *argv[])
   nn_ADD_FIELD_ENCODER(output_encoder, IrisOutput, iris_type, iris_type_encoder);
 
 
-  nn::input::TrainingData training_data;
+  nn::input::TrainingData training_data(151, 4, 3);
   for (int i = 0; i < input_data.size(); ++i) {
     std::vector<double> input;
     input.push_back(input_data[i].sepal_length);
@@ -73,7 +73,7 @@ main(int argc, char *argv[])
     input.push_back(input_data[i].petal_length);
     input.push_back(input_data[i].petal_width);
 
-    training_data.AddPair(input, output_encoder.Encode(&output_data[i]));
+    training_data.SetPair(i, input, output_encoder.Encode(&output_data[i]));
   }
 
 
@@ -97,7 +97,7 @@ main(int argc, char *argv[])
   auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
   //auto out_act = std::make_shared<nn::LinearActivation>();
 
-  nn::Network n({4, 48, 3}, hid_act, out_act);
+  nn::Network n({4, 48, 3}, 151, hid_act, out_act);
   
   auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(n, 0.1, std::make_shared<nn::SquaredError>());
 

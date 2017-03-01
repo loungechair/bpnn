@@ -23,7 +23,7 @@ public:
   {
   }
 
-  dblvector FeedForward(const dblvector& input_pattern)
+  dblmatrix FeedForward(const dblmatrix& input_pattern)
   {
     return network.FeedForward(input_pattern);
   }
@@ -35,8 +35,8 @@ public:
   double* GetLayerBiasPtr(PtrType layer) { return &(layer->bias[0]); }
   template <typename PtrType>
   dblvector& GetLayerBias(PtrType layer) { return layer->bias; }
-  double* GetLayerActivationPtr(std::shared_ptr<Layer> layer) { return &(layer->activation[0]); }
-  double* GetLayerNetInputPtr(std::shared_ptr<Layer> layer) { return &(layer->net_input[0]); }
+  double* GetLayerActivationPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
+  double* GetLayerNetInputPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
 
   //std::vector<Connection *>
   //GetLayerIncomingConnections(std::shared_ptr<Layer> layer) { return layer->incoming; }
@@ -118,10 +118,13 @@ public:
     std::transform(begin(bias), end(bias), begin(bias), std::ref(randgen));
   }
 
+  int Size() const { return layer->Size(); }
+  int BatchSize() const { return layer->BatchSize(); }
+
   void CalculateActivationDerivative()
   {
     auto fn = layer->GetActivationFunction();
-    auto net_in = layer->GetNetInput();
+    const auto& net_in = layer->GetNetInput();
 
     std::transform(begin(net_in), end(net_in), begin(activation), begin(activation_df),
                    [&](auto x, auto fx) { return fn->df(x, fx); });
@@ -129,13 +132,13 @@ public:
 
   void CalculateDelta();
 
-  void CalculateDelta(const dblvector& target, std::shared_ptr<ErrorFunction> error_fn); // for output layer
+  void CalculateDelta(const dblmatrix& target, std::shared_ptr<ErrorFunction> error_fn); // for output layer
 
   void AddIncomingConnection(BackpropConnection* c) { incoming.push_back(c); }
   void AddOutgoingConnection(BackpropConnection* c) { outgoing.push_back(c); }
 
-  const dblvector& GetDelta() const { return delta; }
-  const dblvector& GetActivation() const { return activation; }
+  const dblmatrix& GetDelta() const { return delta; }
+  const dblmatrix& GetActivation() const { return activation; }
 
 private:
   NetworkTrainer& ntr;
@@ -143,9 +146,9 @@ private:
   std::vector<BackpropConnection*> incoming;
   std::vector<BackpropConnection*> outgoing;
   
-  dblvector& activation;
-  dblvector activation_df; // derivative of activation function
-  dblvector delta;
+  dblmatrix& activation;
+  dblmatrix activation_df; // derivative of activation function
+  dblmatrix delta;
 };
 
 
@@ -174,25 +177,21 @@ public:
     std::transform(begin(weights), end(weights), begin(weights), std::ref(randgen));
   }
 
-  void AccumulateNetDelta(dblvector& delta);
+  void AccumulateNetDelta(dblmatrix& delta);
 
   void AccumulateGradients()
   {
     const auto& delta = layer_to->GetDelta();
     const auto& activation = layer_from->GetActivation();
-
-    nn::accum_outer_product(&delta_w[0], 1.0, &delta[0], &activation[0], 
-                                    connection->Rows(), connection->Cols());
+    nn::accum_A_BtC(delta_w, delta, activation);
   }
 
   void UpdateWeights()
   {
-     for (int i = 0; i < weights.size(); ++i) {
-       delta_w[i] += params.momentum * delta_w_previous[i];
-       weights[i] -= params.learning_rate * delta_w[i];
-     }
-     delta_w_previous = delta_w;
-     std::memset(&delta_w[0], 0, sizeof(double)*delta_w.size());
+    nn::accum_A_alphaB(delta_w,  params.momentum, delta_w_previous);
+    nn::accum_A_alphaB(weights, -params.learning_rate, delta_w);
+    delta_w_previous = delta_w;
+    std::memset(delta_w.GetPtr(), 0, sizeof(double)*delta_w.Size());
   }
 
 private:
@@ -202,9 +201,9 @@ private:
   
   double learning_rate;
 
-  dblvector&     weights;
-  dblvector      delta_w;
-  dblvector      delta_w_previous;
+  dblmatrix&     weights;
+  dblmatrix      delta_w;
+  dblmatrix      delta_w_previous;
 
   BackpropTrainingParameters params;
 };

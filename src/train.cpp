@@ -73,44 +73,45 @@ BackpropTrainingAlgorithm::Train()
     return;
   }
   for (int epoch = 0; epoch < max_epochs; ++epoch) {
-    for (int pattern = 0; pattern < training_data->in.size(); ++pattern) {
-      auto in = training_data->in[pattern];
-      auto targ = training_data->out[pattern];
+    const auto& in = training_data->in;
+    const auto& targ = training_data->out;
 
-      const auto& output = ntr.FeedForward(in);
+    const auto& output = ntr.FeedForward(in);
 
-      // delta at output layer
-      auto& output_layer = bp_layers.back();
-      output_layer->CalculateActivationDerivative();
-      output_layer->CalculateDelta(targ, error_fn);
+    // delta at output layer
+    auto& output_layer = bp_layers.back();
+    output_layer->CalculateActivationDerivative();
+    output_layer->CalculateDelta(targ, error_fn);
 
-      for (int i = bp_layers.size() - 2; i >= 1; --i) {
-        bp_layers[i]->CalculateActivationDerivative();
-        bp_layers[i]->CalculateDelta();
-      }
-
-      for (auto& c : bp_connections) {
-        c->AccumulateGradients();
-      }
+    for (int i = bp_layers.size() - 2; i >= 1; --i) {
+      bp_layers[i]->CalculateActivationDerivative();
+      bp_layers[i]->CalculateDelta();
     }
+
+    for (auto& c : bp_connections) {
+      c->AccumulateGradients();
+    }
+    
     for (auto& c : bp_connections) {
       c->UpdateWeights();
     }
   }
 
-  for (int pattern = 0; pattern < training_data->in.size(); ++pattern) {
-    auto in = training_data->in[pattern];
-    auto targ = training_data->out[pattern];
+  auto& in = training_data->in;
+  auto& targ = training_data->out;
 
-    const auto& output = ntr.FeedForward(in);
+  auto output = ntr.FeedForward(in);
 
-    auto& output_layer = bp_layers.back();
+  for (int pattern = 0; pattern < output.Rows(); ++pattern) {
+    auto& in_p = in.GetRow(pattern);
+    auto& out_p = output.GetRow(pattern);
+
     std::cout << "{";
-    for (auto& x : in) {
+    for (auto& x : in_p) {
       std::cout << "\t" << x;
     }
     std::cout << "} --> {";
-    for (auto& x : output_layer->GetActivation()) {
+    for (auto& x : out_p) {
       std::cout << "\t" << x;
     }
     std::cout << "}" << std::endl;
@@ -122,8 +123,8 @@ BackpropLayer::BackpropLayer(NetworkTrainer& ntr_use, Layer* layer_use)
   : ntr(ntr_use),
     layer(layer_use),
     activation(layer->GetActivation()),
-    activation_df(layer->Size()),
-    delta(layer->Size())
+    activation_df(layer->BatchSize(), layer->Size()),
+    delta(layer->BatchSize(), layer->Size())
 {
 }
 
@@ -145,7 +146,7 @@ BackpropLayer::CalculateDelta()
 
 
 void 
-BackpropLayer::CalculateDelta(const dblvector& target, std::shared_ptr<ErrorFunction> error_fn) // for output layer
+BackpropLayer::CalculateDelta(const dblmatrix& target, std::shared_ptr<ErrorFunction> error_fn) // for output layer
 {
   // // calcualte error into delta
   std::transform(begin(activation), end(activation),
@@ -157,7 +158,7 @@ BackpropLayer::CalculateDelta(const dblvector& target, std::shared_ptr<ErrorFunc
   std::transform(begin(delta), end(delta),
     begin(activation_df),
     begin(delta),
-    std::multiplies<double>());
+    std::multiplies<>());
 }
 
 BackpropConnection::BackpropConnection(std::shared_ptr<Connection> connection_use,
@@ -169,8 +170,8 @@ BackpropConnection::BackpropConnection(std::shared_ptr<Connection> connection_us
     layer_to(to),
     learning_rate(learning_rate_use),
     weights(connection->GetWeights()),
-    delta_w(connection->Size(), 0),
-    delta_w_previous(connection->Size(), 0),
+    delta_w(layer_to->Size(), layer_from->Size()),
+    delta_w_previous(layer_to->Size(), layer_from->Size()),
     params{ .01, 0.9, false }
 {
   to->AddIncomingConnection(this);
@@ -179,11 +180,9 @@ BackpropConnection::BackpropConnection(std::shared_ptr<Connection> connection_us
 
 
 void
-BackpropConnection::AccumulateNetDelta(dblvector& delta)
+BackpropConnection::AccumulateNetDelta(dblmatrix& delta)
 {
-  nn::accum_ATx(&delta[0], 1.0, &weights[0],
-                        &(layer_to->GetDelta()[0]),
-                        connection->Rows(), connection->Cols());
+  nn::accum_A_BC(delta, layer_to->GetDelta(), weights);
 }
 
 

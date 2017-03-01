@@ -46,6 +46,24 @@ public:
   {
   }
 
+
+  Matrix(const std::vector<VectorType>& v)
+  {
+    rows = v.size();
+    cols = v[0].size();
+    for (auto& pattern : v) {
+      if (pattern.size() != cols) {
+        std::cerr << "Pattern is wrong size!" << std::endl;
+        exit(EXIT_FAILURE);
+      }
+    }
+    size = rows * cols;
+    data.resize(size);
+    for (int row = 0; row < rows; ++row) {
+      SetRowValues(row, v[row]);
+    }
+  }
+
   std::pair<IteratorType, IteratorType> GetRowRange(int row_num)
   {
     auto start_iterator = data.begin() + row_num * cols;
@@ -54,6 +72,8 @@ public:
   }
 
   RowType GetRow(int row_num) { return RowType(GetRowRange(row_num)); }
+
+  const RowType GetRow(int row_num) const { return RowType(GetRowRange(row_num)); }
 
   VectorType GetRowValues(int row_num)
   {
@@ -127,6 +147,12 @@ private:
 
   std::vector<T> data;
 };
+
+
+template <typename T> typename Matrix<T>::IteratorType begin(Matrix<T>& A) { return A.begin(); }
+template <typename T> typename Matrix<T>::ConstIteratorType begin(const Matrix<T>& A) { return A.begin(); }
+template <typename T> typename Matrix<T>::IteratorType end(Matrix<T>& A) { return A.end(); }
+template <typename T> typename Matrix<T>::ConstIteratorType end(const Matrix<T>& A) { return A.end(); }
 
 
 // y += alpha*Ax

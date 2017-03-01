@@ -9,11 +9,12 @@ namespace nn
 
 
 
-Layer::Layer(int size_use,
+Layer::Layer(int size_use, int batch_size_use,
              std::shared_ptr<ActivationFunction> activation_fn_use)
   : size(size_use),
-    net_input(size),
-    activation(size),
+    batch_size(batch_size_use),
+    net_input(batch_size, size),
+    activation(batch_size, size),
     bias(size),
     activation_fn(activation_fn_use)
 {
@@ -24,7 +25,9 @@ Layer::Layer(int size_use,
 void
 Layer::CalculateActivation()
 {
-  net_input = bias;
+  for (int row = 0; row < activation.Rows(); ++row) {
+    net_input.SetRowValues(row, bias);
+  }
 
   for (auto& in_conn: incoming) {
     in_conn->AccumulateNetInput(net_input);
@@ -37,8 +40,10 @@ Layer::CalculateActivation()
 
 
 Network::Network(const std::vector<int>& layer_sizes,
-                 std::shared_ptr<ActivationFunction> hid_act_fn,
-                 std::shared_ptr<ActivationFunction> out_act_fn)
+  int batch_size_use,
+  std::shared_ptr<ActivationFunction> hid_act_fn,
+  std::shared_ptr<ActivationFunction> out_act_fn)
+  : batch_size(batch_size_use)
 {
   int num_hid = layer_sizes.size() - 1;
   
@@ -62,8 +67,8 @@ Network::AddDefaultConnections()
 
 
 
-dblvector
-Network::FeedForward(const dblvector& input_pattern)
+dblmatrix
+Network::FeedForward(const dblmatrix& input_pattern)
 {
   layers[INPUT_LAYER]->SetActivation(input_pattern);
 

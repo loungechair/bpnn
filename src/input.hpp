@@ -21,25 +21,28 @@ namespace input
 class TrainingData
 {
 public:
-  TrainingData() {}
+  TrainingData(int pairs, int in_size, int out_size)
+    : in(pairs, in_size),
+      out(pairs, out_size)
+  {}
 
   TrainingData(const std::vector<std::vector<double>>& input_use,
                const std::vector<std::vector<double>>& output_use)
     : in(input_use),
       out(output_use)
   {
-    assert(in.size() == out.size());
+    assert(in.Rows() == out.Rows());
   }
 
-  void AddPair(const std::vector<double>& in_use, const std::vector<double>& out_use)
+  void SetPair(int row, const std::vector<double>& in_use, const std::vector<double>& out_use)
   {
-    in.push_back(in_use);
-    out.push_back(out_use);
+    in.SetRowValues(row, in_use);
+    out.SetRowValues(row, out_use);
   }
 
 //private:
-  std::vector<std::vector<double>> in;
-  std::vector<std::vector<double>> out;
+  dblmatrix in;
+  dblmatrix out;
 };
 
 
