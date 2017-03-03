@@ -154,22 +154,6 @@ template <typename T> typename Matrix<T>::ConstIteratorType begin(const Matrix<T
 template <typename T> typename Matrix<T>::IteratorType end(Matrix<T>& A) { return A.end(); }
 template <typename T> typename Matrix<T>::ConstIteratorType end(const Matrix<T>& A) { return A.end(); }
 
-
-// y += alpha*Ax
-void accum_Ax(double* y, double alpha, const double* A, const double* x, int rows, int cols);
-
-void accum_Ax(dblvector& y, double alpha, const dblvector& A, const dblvector& x, int rows, int cols);
-
-// y += alpha*ATx
-// A is rows x cols, so AT is cols x rows
-// x is rows x 1
-// y is cols x 1
-void accum_ATx(double *y, double alpha, const double* A, const double* x, int rows, int cols);
-
-void
-accum_outer_product(double* A, double alpha, const double* x, const double* y, int rows, int cols);
-
-
 // matrix-matrix operations
 // A += B C
 template <typename T>

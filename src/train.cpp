@@ -76,7 +76,7 @@ BackpropTrainingAlgorithm::Train()
     const auto& in = training_data->in;
     const auto& targ = training_data->out;
 
-    const auto& output = ntr.FeedForward(in);
+    ntr.FeedForward(in);
 
     // delta at output layer
     auto& output_layer = bp_layers.back();
@@ -100,7 +100,7 @@ BackpropTrainingAlgorithm::Train()
   auto& in = training_data->in;
   auto& targ = training_data->out;
 
-  auto output = ntr.FeedForward(in);
+  auto& output = ntr.FeedForward(in);
 
   for (int pattern = 0; pattern < output.Rows(); ++pattern) {
     auto& in_p = in.GetRow(pattern);
@@ -172,7 +172,7 @@ BackpropConnection::BackpropConnection(std::shared_ptr<Connection> connection_us
     weights(connection->GetWeights()),
     delta_w(layer_to->Size(), layer_from->Size()),
     delta_w_previous(layer_to->Size(), layer_from->Size()),
-    params{ .01, 0.9, false }
+    params{ learning_rate, 0.4, false }
 {
   to->AddIncomingConnection(this);
   from->AddOutgoingConnection(this);

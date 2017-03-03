@@ -57,11 +57,9 @@ main(int argc, char *argv[])
 
   nn_CALCULATE_FIELD_STATS(output_data, IrisOutput, iris_type, iris_stats);
 
-  auto iris_categories = iris_stats.GetCategories();
-
   nn::input::InputEncoder<IrisOutput> output_encoder;
   auto iris_type_encoder = std::make_shared<nn::input::CategoryEncoder<std::string>>();
-  iris_type_encoder->AddCategories(iris_categories);
+  iris_type_encoder->AddCategories(iris_stats.GetCategories());
   nn_ADD_FIELD_ENCODER(output_encoder, IrisOutput, iris_type, iris_type_encoder);
 
 
@@ -76,30 +74,15 @@ main(int argc, char *argv[])
     training_data.SetPair(i, input, output_encoder.Encode(&output_data[i]));
   }
 
-
-  //nn::input::TrainingData training_data{
-  //  {
-  //    { 0, 0, 0, 0 },
-  //    { 0, 1, 0, 1 },
-  //    { 0, 1, 1, 0 },
-  //    { 1, 0, 0, 1 }
-  //  },
-  //  
-  //  {
-  //    { -1.75, -1.75, -1.75, -1.75 },
-  //    { -1.75, 0.992, -1.75, 0.992 },
-  //    { -1.75, 0.992, 0.992, -1.75 },
-  //    { 1.992, -1.75, -1.75, 0.992 }
-  //  }
-  //};
-
   auto hid_act = std::make_shared<nn::SigmoidActivation>(-1, 1);
   auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
   //auto out_act = std::make_shared<nn::LinearActivation>();
 
-  nn::Network n({4, 48, 3}, 151, hid_act, out_act);
+  auto err_function = std::make_shared<nn::SquaredError>();
+
+  nn::Network n({4, 32, 3}, 151, hid_act, out_act, err_function);
   
-  auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(n, 0.1, std::make_shared<nn::SquaredError>());
+  auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(n, 0.01, std::make_shared<nn::SquaredError>());
 
   tr->InitializeNetwork();
   tr->SetTrainingData(&training_data);

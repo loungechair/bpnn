@@ -13,9 +13,35 @@
 #include <cassert>
 
 
+/*
+ * Error statistics
+ * - Total error
+ * - Average error per pattern
+ * - number of patterns
+ * - total error by unit
+ * - total error by epoch
+ */
+
 
 namespace nn
 {
+  class Network;
+
+  class ErrorStatistics
+  {
+  public:
+    ErrorStatistics(int num_patterns_use, int num_units_use);
+
+    void GatherStatistics(const Network& net);
+
+
+    void GetTotalError(int epoch);
+    void GetTotalError(int epoch, int pattern);
+    void GetTotalError(int epoch, int pattern, int unit);
+    //void GetTotalError(int epoch, int unit);
+
+  private:
+  };
 
 
 // forward declarations
@@ -54,7 +80,7 @@ public:
   dblmatrix& GetActivation() { return activation; }
   const dblmatrix& GetNetInput() const { return net_input; }
 
-  const double* GetActivationPtr() const { return activation.GetPtr(); }
+  const dblscalar* GetActivationPtr() const { return activation.GetPtr(); }
 
   int Size() const { return size; }
 
@@ -128,10 +154,12 @@ class Network
   
 public:
   // Network(const std::string& file_name);        // load a network from a file
+
   Network(const std::vector<int>& layer_sizes,     // create a network with specified layer sizes
           int batch_size_use,
           std::shared_ptr<ActivationFunction> hid_act_fn,
-          std::shared_ptr<ActivationFunction> out_act_fn);
+          std::shared_ptr<ActivationFunction> out_act_fn,
+          std::shared_ptr<ErrorFunction> err_function_use);
 
   Network() {} // create an empty network
   
@@ -145,7 +173,7 @@ public:
   dblmatrix FeedForward(const dblmatrix& input_pattern);
 
   const dblmatrix& GetActivation(int l) const { return layers[l]->GetActivation(); }
-  const double* GetActivationPtr(int l) const { return layers[l]->GetActivationPtr(); }
+  const dblscalar* GetActivationPtr(int l) const { return layers[l]->GetActivationPtr(); }
 
   const dblmatrix& GetNetInput(int l) const { return layers[l]->GetNetInput(); }
 
@@ -157,6 +185,8 @@ private:
 
   std::vector<std::shared_ptr<Layer>> layers;
   std::vector<std::shared_ptr<Connection>> connections;
+
+  std::shared_ptr<ErrorFunction> err_function;
 
   void AddConnection(Layer* from, Layer* to);
 };

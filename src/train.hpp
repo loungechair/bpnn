@@ -35,8 +35,8 @@ public:
   double* GetLayerBiasPtr(PtrType layer) { return &(layer->bias[0]); }
   template <typename PtrType>
   dblvector& GetLayerBias(PtrType layer) { return layer->bias; }
-  double* GetLayerActivationPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
-  double* GetLayerNetInputPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
+  dblscalar* GetLayerActivationPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
+  dblscalar* GetLayerNetInputPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
 
   //std::vector<Connection *>
   //GetLayerIncomingConnections(std::shared_ptr<Layer> layer) { return layer->incoming; }
@@ -156,8 +156,8 @@ private:
 
 struct BackpropTrainingParameters
 {
-  double learning_rate;
-  double momentum;
+  dblscalar learning_rate;
+  dblscalar momentum;
   bool   normalize_gradient;
 };
 

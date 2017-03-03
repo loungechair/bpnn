@@ -42,8 +42,10 @@ Layer::CalculateActivation()
 Network::Network(const std::vector<int>& layer_sizes,
   int batch_size_use,
   std::shared_ptr<ActivationFunction> hid_act_fn,
-  std::shared_ptr<ActivationFunction> out_act_fn)
-  : batch_size(batch_size_use)
+  std::shared_ptr<ActivationFunction> out_act_fn,
+  std::shared_ptr<ErrorFunction> err_function_use)
+  : batch_size(batch_size_use),
+    err_function(err_function_use)
 {
   int num_hid = layer_sizes.size() - 1;
   
@@ -72,17 +74,8 @@ Network::FeedForward(const dblmatrix& input_pattern)
 {
   layers[INPUT_LAYER]->SetActivation(input_pattern);
 
-  // std::cout << "FORWARD PHASE" << std::endl;
-  
   for (size_t l = 1; l < layers.size(); ++l) {
     layers[l]->CalculateActivation();
-    
-    //std::cout << "Layer " << l << ":";
-    //for (auto& p : layers[l]->GetActivation()) {
-    //  std::cout << '\t' << p;
-    //}
-    //
-    //std::cout << std::endl;
   }
 
   return layers.back()->GetActivation();
