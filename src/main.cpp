@@ -74,19 +74,22 @@ main(int argc, char *argv[])
     training_data.SetPair(i, input, output_encoder.Encode(&output_data[i]));
   }
 
-  auto hid_act = std::make_shared<nn::SigmoidActivation>(-1, 1);
+  //auto hid_act = std::make_shared<nn::SigmoidActivation>(-1, 1);
+  auto hid_act = std::make_shared<nn::TanhActivation>();
   auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
   //auto out_act = std::make_shared<nn::LinearActivation>();
 
-  auto err_function = std::make_shared<nn::SquaredError>();
+  auto err_function = std::make_shared<nn::CrossEntropyError>();
 
-  nn::Network n({4, 32, 3}, 151, hid_act, out_act, err_function);
+  nn::Network n({4, 24, 3}, 151, hid_act, out_act, err_function);
+
+  nn::train::BackpropTrainingParameters params{ 0.001, 0.9, false, 25'000, 0.01 };
   
-  auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(n, 0.01, std::make_shared<nn::SquaredError>());
+  auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(n, params);
 
   tr->InitializeNetwork();
   tr->SetTrainingData(&training_data);
-  //
+
   auto start_time = std::chrono::high_resolution_clock::now();
   tr->Train();
   auto end_time = std::chrono::high_resolution_clock::now();

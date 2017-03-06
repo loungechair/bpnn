@@ -2,6 +2,7 @@
 
 #include "network.hpp"
 #include "input.hpp"
+#include "utility.hpp"
 
 #include <map>
 
@@ -31,6 +32,8 @@ public:
   std::vector<std::shared_ptr<Layer>> GetLayers() const { return network.layers; }
   std::vector<std::shared_ptr<Connection>> GetConnections() const { return network.connections; }
 
+  auto GetErrorFunction() const { return network.err_function; }
+
   template <typename PtrType>
   double* GetLayerBiasPtr(PtrType layer) { return &(layer->bias[0]); }
   template <typename PtrType>
@@ -50,7 +53,7 @@ public:
   Layer* GetConnectionToLayer(std::shared_ptr<Connection> c) { return c->layer_to; }
 
 private:
-  Network network;
+  Network& network;
 };
 
 
@@ -76,10 +79,23 @@ class BackpropLayer;
 class BackpropConnection;
 
 
+struct BackpropTrainingParameters
+{
+  dblscalar learning_rate;
+  dblscalar momentum;
+  bool      normalize_gradient;
+  // stop when either we hit the maximum number of epochs, or the
+  // total error falls below min_error.
+  int       max_epochs;
+  dblscalar min_error;
+};
+
+
+
 class BackpropTrainingAlgorithm : public TrainingAlgorithm
 {
 public:
-  BackpropTrainingAlgorithm(Network& network_use, double learning_rate_use, std::shared_ptr<ErrorFunction> error_fn_use);
+  BackpropTrainingAlgorithm(Network& network_use, const BackpropTrainingParameters params_use);
 
   void InitializeNetwork() override;
   void Train() override;
@@ -94,8 +110,7 @@ private:
 
   std::shared_ptr<ErrorFunction> error_fn;
 
-  double learning_rate;
-  int    max_epochs;
+  BackpropTrainingParameters params;
 
   nn::input::TrainingData* training_data;
 };
@@ -108,7 +123,7 @@ class BackpropLayer
   friend class BackpropTrainingAlgorithm;
   
 public:
-  BackpropLayer(NetworkTrainer& ntr_use, Layer* layer_use);
+  BackpropLayer(NetworkTrainer& ntr_use, const BackpropTrainingParameters& params, Layer* layer_use);
 
   template <typename RngType>
   void InitializeBiases(RngType& randgen)
@@ -124,13 +139,26 @@ public:
   void CalculateActivationDerivative()
   {
     auto fn = layer->GetActivationFunction();
-    const auto& net_in = layer->GetNetInput();
+    auto& net_in = layer->GetNetInput();
 
-    std::transform(begin(net_in), end(net_in), begin(activation), begin(activation_df),
+    std::transform(net_in.begin(), net_in.end(), activation.begin(), activation_df.begin(),
                    [&](auto x, auto fx) { return fn->df(x, fx); });
   }
 
-  void CalculateDelta();
+
+  void AccumulateBiasGradient()
+  {
+    dblvector ones(layer->BatchSize(), 1.0);
+    accum_y_Atx(d_bias, delta, ones);
+  }
+
+  void UpdateBias()
+  {
+    auto& bias = ntr.GetLayerBias(layer);
+    accum_y_alphax(bias, -learning_rate, d_bias);
+  }
+
+  void CalculateDelta();  // at hidden layers
 
   void CalculateDelta(const dblmatrix& target, std::shared_ptr<ErrorFunction> error_fn); // for output layer
 
@@ -146,20 +174,15 @@ private:
   std::vector<BackpropConnection*> incoming;
   std::vector<BackpropConnection*> outgoing;
   
+  double learning_rate;
+
   dblmatrix& activation;
   dblmatrix activation_df; // derivative of activation function
   dblmatrix delta;
+
+  dblvector d_bias;        // delta for bias
 };
 
-
-
-
-struct BackpropTrainingParameters
-{
-  dblscalar learning_rate;
-  dblscalar momentum;
-  bool   normalize_gradient;
-};
 
 
 
@@ -188,6 +211,9 @@ public:
 
   void UpdateWeights()
   {
+    if (normalize_gradient) {
+      delta_w.Normalize();
+    }
     nn::accum_A_alphaB(delta_w,  params.momentum, delta_w_previous);
     nn::accum_A_alphaB(weights, -params.learning_rate, delta_w);
     delta_w_previous = delta_w;
@@ -199,11 +225,13 @@ private:
   BackpropLayer* layer_from;
   BackpropLayer* layer_to;
   
-  double learning_rate;
-
   dblmatrix&     weights;
   dblmatrix      delta_w;
   dblmatrix      delta_w_previous;
+
+  double learning_rate;
+  double momentum;
+  bool   normalize_gradient;
 
   BackpropTrainingParameters params;
 };

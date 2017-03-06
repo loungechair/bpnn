@@ -25,23 +25,23 @@
 
 namespace nn
 {
-  class Network;
+class Network;
 
-  class ErrorStatistics
-  {
-  public:
-    ErrorStatistics(int num_patterns_use, int num_units_use);
+class ErrorStatistics
+{
+public:
+  ErrorStatistics(int num_patterns_use, int num_units_use);
 
-    void GatherStatistics(const Network& net);
+  void GatherStatistics(const Network& net);
 
 
-    void GetTotalError(int epoch);
-    void GetTotalError(int epoch, int pattern);
-    void GetTotalError(int epoch, int pattern, int unit);
-    //void GetTotalError(int epoch, int unit);
+  void GetTotalError(int epoch);
+  void GetTotalError(int epoch, int pattern);
+  void GetTotalError(int epoch, int pattern, int unit);
+  //void GetTotalError(int epoch, int unit);
 
-  private:
-  };
+private:
+};
 
 
 // forward declarations
@@ -130,7 +130,6 @@ public:
     nn::accum_A_BCt(net_input, layer_from->GetActivation(), weights);
   }
 
-
   dblmatrix& GetWeights() { return weights; }
 
 private:
@@ -171,11 +170,6 @@ public:
   int AddDefaultConnections();
 
   dblmatrix FeedForward(const dblmatrix& input_pattern);
-
-  const dblmatrix& GetActivation(int l) const { return layers[l]->GetActivation(); }
-  const dblscalar* GetActivationPtr(int l) const { return layers[l]->GetActivationPtr(); }
-
-  const dblmatrix& GetNetInput(int l) const { return layers[l]->GetNetInput(); }
 
   std::vector<std::shared_ptr<Layer>>& GetLayers() { return layers; }
   std::vector<std::shared_ptr<Connection>>& GetConnections() { return connections; }

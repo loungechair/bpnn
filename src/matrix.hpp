@@ -3,6 +3,8 @@
 #include <vector>
 #include <array>
 
+#include <mkl_cblas.h>
+
 
 namespace nn
 {
@@ -108,6 +110,9 @@ public:
   void SetEntry(int row, int col, T value) { data[row * cols + col] = value; }
   void SetEntry(int index, T value) { data[index] = value; }
 
+  T& operator[](int index) { return data[index]; }
+  const T& operator[](int index) const { return data[index]; }
+
   void SetAllRowValues(const dblvector& values)
   {
     for (int i = 0; i < rows; ++i) {
@@ -128,6 +133,17 @@ public:
   IteratorType end()   { return data.end(); }
   ConstIteratorType begin() const { return data.begin(); }
   ConstIteratorType end()   const { return data.end(); }
+
+  T Norm() const {
+    return cblas_dnrm2(data.size(), &data[0], 1);
+  }
+
+  void Normalize() {
+    T norm = Norm();
+    if (norm > 1.0) {
+      cblas_dscal(data.size(), 1.0 / norm, &data[0], 1);
+    }
+  }
   
   void print()
   {
@@ -149,27 +165,43 @@ private:
 };
 
 
+
 template <typename T> typename Matrix<T>::IteratorType begin(Matrix<T>& A) { return A.begin(); }
 template <typename T> typename Matrix<T>::ConstIteratorType begin(const Matrix<T>& A) { return A.begin(); }
 template <typename T> typename Matrix<T>::IteratorType end(Matrix<T>& A) { return A.end(); }
 template <typename T> typename Matrix<T>::ConstIteratorType end(const Matrix<T>& A) { return A.end(); }
 
+
+
 // matrix-matrix operations
 // A += B C
 template <typename T>
 void accum_A_BC(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
+
+
 // A += B C^T
 template <typename T>
 void accum_A_BCt(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
+
+
 // A += B^T C
 template <typename T>
 void accum_A_BtC(Matrix<T>& A, const Matrix<T>& B, const Matrix<T>& C);
+
+
 // y += A^T x
 template <typename T>
 void accum_y_Atx(typename Matrix<T>::VectorType& y, const Matrix<T>& A,
   const typename Matrix<T>::VectorType& x);
+
+
 // A += alpha B
 template <typename T>
 void accum_A_alphaB(Matrix<T>& A, T alpha, const Matrix<T>& B);
+
+
+// y += alpha x
+template <typename T>
+void accum_y_alphax(std::vector<T>& y, T alpha, const std::vector<T>& x);
 
 } // namespace nn

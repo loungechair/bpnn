@@ -4,20 +4,19 @@
 #include <algorithm>
 #include <chrono>
 #include <random>
+#include <iostream>
+#include <iomanip>
 
 namespace nn
 {
 namespace train
 {
 
-
 BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
-                                                     double learning_rate_use,
-                                                     std::shared_ptr<ErrorFunction> error_fn_use)
+                                                     const BackpropTrainingParameters params_use)
   : ntr(network_use),
-    error_fn(error_fn_use),
-    learning_rate(learning_rate_use),
-    max_epochs(50'000),
+    params(params_use),
+    error_fn(ntr.GetErrorFunction()),
     training_data(nullptr)
 {
   const auto& x = ntr.GetLayers();
@@ -26,7 +25,7 @@ BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
   std::map<Layer*, std::shared_ptr<BackpropLayer>> layer_to_bp;
 
   for (auto& l : x) {
-    auto bp_layer = std::make_shared<BackpropLayer>(ntr, l.get());
+    auto bp_layer = std::make_shared<BackpropLayer>(ntr, params, l.get());
     layer_to_bp.insert(std::make_pair(l.get(), bp_layer));
     
     bp_layers.push_back(bp_layer);
@@ -36,7 +35,7 @@ BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
     auto to_layer = ntr.GetConnectionToLayer(c);
     auto bp_from_layer = layer_to_bp[from_layer].get();
     auto bp_to_layer = layer_to_bp[to_layer].get();
-    auto bp_connection = std::make_shared<BackpropConnection>(c, bp_from_layer, bp_to_layer, learning_rate);
+    auto bp_connection = std::make_shared<BackpropConnection>(c, bp_from_layer, bp_to_layer, params.learning_rate);
     bp_connections.push_back(bp_connection);
   }
 }
@@ -72,7 +71,7 @@ BackpropTrainingAlgorithm::Train()
     std::cerr << "No training data selected." << std::endl;
     return;
   }
-  for (int epoch = 0; epoch < max_epochs; ++epoch) {
+  for (int epoch = 0; epoch < params.max_epochs; ++epoch) {
     const auto& in = training_data->in;
     const auto& targ = training_data->out;
 
@@ -88,6 +87,11 @@ BackpropTrainingAlgorithm::Train()
       bp_layers[i]->CalculateDelta();
     }
 
+    for (int i = bp_layers.size() - 1; i >= 1; --i) {
+      bp_layers[i]->AccumulateBiasGradient();
+      bp_layers[i]->UpdateBias();
+    }
+    
     for (auto& c : bp_connections) {
       c->AccumulateGradients();
     }
@@ -108,22 +112,24 @@ BackpropTrainingAlgorithm::Train()
 
     std::cout << "{";
     for (auto& x : in_p) {
-      std::cout << "\t" << x;
+      std::cout << std::fixed << std::setprecision(1) << std::setw(8) << x;
     }
     std::cout << "} --> {";
     for (auto& x : out_p) {
-      std::cout << "\t" << x;
+      std::cout << std::fixed << std::setprecision(4) << std::setw(8) << x;
     }
     std::cout << "}" << std::endl;
   }
 }
 
 
-BackpropLayer::BackpropLayer(NetworkTrainer& ntr_use, Layer* layer_use)
+BackpropLayer::BackpropLayer(NetworkTrainer& ntr_use, const BackpropTrainingParameters& params, Layer* layer_use)
   : ntr(ntr_use),
     layer(layer_use),
+    learning_rate(params.learning_rate),
     activation(layer->GetActivation()),
     activation_df(layer->BatchSize(), layer->Size()),
+    d_bias(layer->Size()),
     delta(layer->BatchSize(), layer->Size())
 {
 }

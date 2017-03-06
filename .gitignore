@@ -30,6 +30,15 @@
 *.sdf
 *.vcxproj.filters
 *.opendb
+*.log
+*.ilk
+*.pdb
+*.tlog
+packages/
+x64/
+*.db
+*.suo
+*.cd
 
 # Executables
 *.exe

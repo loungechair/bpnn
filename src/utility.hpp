@@ -15,6 +15,6 @@ void adjacent_pairs(ForwardIterator first, ForwardIterator last, Function f)
   }
 }
 
-
 }
+
 }

@@ -52,47 +52,28 @@ class LinearActivation : public ActivationFunction
 public:
   LinearActivation(double slope_use = 1.0) : slope(slope_use) {}
 
-private:
-  double slope;
-
   double f(double x) const override { return slope * x; }
   double df(double x, double fx) const override { return slope; }
+
+private:
+  double slope;
 };
 
 
 
-//class SoftmaxActivation : public ActivationFunction
-//{
-//public:
-//  virtual void f(dblvector& fx, const dblvector& x) const
-//  {
-//    total_value = std::accumulate(std::begin(x), std::end(x), 0.0,
-//                                  [](auto y, auto z) { return y + std::exp(y); });
-//
-//    std::transform(std::begin(x), std::end(x), std::begin(fx), [&](auto y){ return this->f_value(y); });
-//  }
-//
-//  virtual void df(dblvector& dfx, const dblvector& x, const dblvector& fx) const
-//  {
-//    std::transform(std::begin(x), std::end(x),
-//                   std::begin(fx),
-//                   std::begin(dfx), [&](auto y, auto z){ return this->df_value(y, z); });
-//  }
-//
-//private:
-//  mutable double total_value;
-//
-//  double f_value(double x) const override
-//  {
-//    return 0.0;
-//  }
-//
-//  double df_value(double x, double fx) const override
-//  {
-//    return 0;
-//  }
-//};
+class TanhActivation : public ActivationFunction
+{
+public:
+  double f(double x) const override
+  {
+    return tanh(x);
+  }
 
+  double df(double x, double fx) const override
+  {
+    return (1 - fx*fx);
+  }
+};
 
 
 }

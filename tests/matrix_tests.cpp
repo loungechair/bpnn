@@ -91,3 +91,19 @@ TEST(Matrix, accum_y_Atx)
     EXPECT_EQ(answer[i], result[i]);
   }
 }
+
+TEST(Matrix, accum_y_alphax)
+{
+  nn::dblvector x{ 1, 2, 3 };
+  nn::dblvector y{ 4, 5, 6 };
+
+  nn::dblvector answer{ 4.1, 5.2, 6.3 };
+
+  nn::accum_y_alphax(y, 0.1, x);
+  const auto& result = y;
+
+  EXPECT_EQ(answer.size(), result.size());
+  for (int i = 0; i < answer.size(); ++i) {
+    EXPECT_EQ(answer[i], result[i]);
+  }
+}

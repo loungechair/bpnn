@@ -111,4 +111,21 @@ accum_A_alphaB(Matrix<double>& A, double alpha, const Matrix<double>& B)
 }
 
 
+
+// y += alpha x
+template <>
+void
+accum_y_alphax(std::vector<float>& y, float alpha, const std::vector<float>& x)
+{
+  cblas_saxpy(y.size(), alpha, &x[0], 1, &y[0], 1);
+}
+
+template <>
+void
+accum_y_alphax(std::vector<double>& y, double alpha, const std::vector<double>& x)
+{
+  cblas_daxpy(y.size(), alpha, &x[0], 1, &y[0], 1);
+}
+
+
 }

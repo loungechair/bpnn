@@ -28,6 +28,19 @@ class SquaredError : public ErrorFunction
   }
 };
 
+class CrossEntropyError : public ErrorFunction
+{
+  double E(double x, double y) const override
+  {
+    return -y*log(x) - (1 - y)*log(1 - x);
+  }
+
+  double dE(double x, double y) const override
+  {
+    return (x - y) / (x*(1 - x));
+  }
+};
+
 
 
 }

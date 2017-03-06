@@ -1,19 +1,20 @@
-* Fix bias unit training
 * Add better reporting for total error in network
-* Add more error functions
-  - Cross-entropy error
-  - Softmax error
+* Add Softmax error
+* Fix sending backprop parameters into network
 * Additional backprop options
-  - Add weight update normalization option
   - Weight decay
   - delta-bar-delta
 * Clean up using Network/NetworkTrainer class in Backprop classes
-* Add more activation function
-  - rectified linear unit/softplus
-  - tanh
+* Add rectified linear unit/softplus activation
+* Make sure input encoders work with float data
 * More flexible batching for training patterns.
-  - Can I get rid of copying this data around?
 * Recurrent networks
   - BPTT
   - Elman network/context unit
-  - How to do network unrolling?
+
+DONE
+* Fix bias unit training
+* Add Cross-entropy error
+* Add tanh activation
+* Add weight update normalization option
+  
