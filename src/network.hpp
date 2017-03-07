@@ -27,20 +27,30 @@ namespace nn
 {
 class Network;
 
+template <typename T>
 class ErrorStatistics
 {
 public:
-  ErrorStatistics(int num_patterns_use, int num_units_use);
+  ErrorStatistics(const int& network_use, int num_patterns_use);
 
-  void GatherStatistics(const Network& net);
+  void AccumulateErrorStatistics(int epoch)
+  {
+    T total_error = 0;
+  }
 
+  T GetTotalError(int epoch) const { return total_error[epoch]; }
+  std::vector<T> GetTotalError() const { return total_error; }
 
-  void GetTotalError(int epoch);
-  void GetTotalError(int epoch, int pattern);
-  void GetTotalError(int epoch, int pattern, int unit);
-  //void GetTotalError(int epoch, int unit);
+  T GetAverageError(int epoch) const { return total_errror[epoch] / num_patterns[epoch]; }
+  std::vector<T> GetAverageError() const;
 
 private:
+  const Network& network;
+  // following vectors are indexed by epoch
+  std::vector<T> total_error;
+  std::vector<T> mean;
+  std::vector<T> M2;
+  std::vector<int> num_patterns;
 };
 
 
@@ -81,6 +91,8 @@ public:
   const dblmatrix& GetNetInput() const { return net_input; }
 
   const dblscalar* GetActivationPtr() const { return activation.GetPtr(); }
+
+  dblscalar TotalError(const dblmatrix& target_pattern, const ErrorFunction* error_fn);
 
   int Size() const { return size; }
 
@@ -170,12 +182,15 @@ public:
   int AddDefaultConnections();
 
   dblmatrix FeedForward(const dblmatrix& input_pattern);
+  dblscalar TotalError(const dblmatrix& target_pattern);
 
   std::vector<std::shared_ptr<Layer>>& GetLayers() { return layers; }
   std::vector<std::shared_ptr<Connection>>& GetConnections() { return connections; }
 
 private:
   int batch_size;
+
+  double last_error; // total error across all patterns from last call to FeedForward
 
   std::vector<std::shared_ptr<Layer>> layers;
   std::vector<std::shared_ptr<Connection>> connections;

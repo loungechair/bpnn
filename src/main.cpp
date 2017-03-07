@@ -81,11 +81,11 @@ main(int argc, char *argv[])
 
   auto err_function = std::make_shared<nn::CrossEntropyError>();
 
-  nn::Network n({4, 24, 3}, 151, hid_act, out_act, err_function);
+  nn::Network network({4, 24, 48, 64, 48, 24, 3}, 151, hid_act, out_act, err_function);
 
-  nn::train::BackpropTrainingParameters params{ 0.001, 0.9, false, 25'000, 0.01 };
+  nn::train::BackpropTrainingParameters params{ 0.0001, 0.25, true, 100'000, 0.01 };
   
-  auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(n, params);
+  auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(network, params);
 
   tr->InitializeNetwork();
   tr->SetTrainingData(&training_data);

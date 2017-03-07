@@ -25,7 +25,7 @@ BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
   std::map<Layer*, std::shared_ptr<BackpropLayer>> layer_to_bp;
 
   for (auto& l : x) {
-    auto bp_layer = std::make_shared<BackpropLayer>(ntr, params, l.get());
+    auto bp_layer = std::make_shared<BackpropLayer>(ntr, params, l.get(), ntr.GetErrorFunction().get());
     layer_to_bp.insert(std::make_pair(l.get(), bp_layer));
     
     bp_layers.push_back(bp_layer);
@@ -35,7 +35,8 @@ BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
     auto to_layer = ntr.GetConnectionToLayer(c);
     auto bp_from_layer = layer_to_bp[from_layer].get();
     auto bp_to_layer = layer_to_bp[to_layer].get();
-    auto bp_connection = std::make_shared<BackpropConnection>(c, bp_from_layer, bp_to_layer, params.learning_rate);
+
+    auto bp_connection = std::make_shared<BackpropConnection>(c, bp_from_layer, bp_to_layer, params);
     bp_connections.push_back(bp_connection);
   }
 }
@@ -72,15 +73,19 @@ BackpropTrainingAlgorithm::Train()
     return;
   }
   for (int epoch = 0; epoch < params.max_epochs; ++epoch) {
+    // for batch in training_data...
+
     const auto& in = training_data->in;
     const auto& targ = training_data->out;
 
     ntr.FeedForward(in);
 
+    std::cout << epoch << "\t" << ntr.TotalError(targ) << std::endl;
+
     // delta at output layer
     auto& output_layer = bp_layers.back();
     output_layer->CalculateActivationDerivative();
-    output_layer->CalculateDelta(targ, error_fn);
+    output_layer->CalculateDelta(targ);
 
     for (int i = bp_layers.size() - 2; i >= 1; --i) {
       bp_layers[i]->CalculateActivationDerivative();
@@ -123,14 +128,16 @@ BackpropTrainingAlgorithm::Train()
 }
 
 
-BackpropLayer::BackpropLayer(NetworkTrainer& ntr_use, const BackpropTrainingParameters& params, Layer* layer_use)
+BackpropLayer::BackpropLayer(NetworkTrainer& ntr_use, const BackpropTrainingParameters& params, Layer* layer_use,
+  const ErrorFunction* error_fn_use)
   : ntr(ntr_use),
     layer(layer_use),
     learning_rate(params.learning_rate),
     activation(layer->GetActivation()),
     activation_df(layer->BatchSize(), layer->Size()),
     d_bias(layer->Size()),
-    delta(layer->BatchSize(), layer->Size())
+    delta(layer->BatchSize(), layer->Size()),
+    error_fn(error_fn_use)
 {
 }
 
@@ -152,7 +159,7 @@ BackpropLayer::CalculateDelta()
 
 
 void 
-BackpropLayer::CalculateDelta(const dblmatrix& target, std::shared_ptr<ErrorFunction> error_fn) // for output layer
+BackpropLayer::CalculateDelta(const dblmatrix& target) // for output layer
 {
   // // calcualte error into delta
   std::transform(begin(activation), end(activation),
@@ -170,15 +177,14 @@ BackpropLayer::CalculateDelta(const dblmatrix& target, std::shared_ptr<ErrorFunc
 BackpropConnection::BackpropConnection(std::shared_ptr<Connection> connection_use,
                                        BackpropLayer* from,
                                        BackpropLayer* to,
-                                       double learning_rate_use)
+                                       const BackpropTrainingParameters& params_use)
   : connection(connection_use),
     layer_from(from),
     layer_to(to),
-    learning_rate(learning_rate_use),
     weights(connection->GetWeights()),
     delta_w(layer_to->Size(), layer_from->Size()),
     delta_w_previous(layer_to->Size(), layer_from->Size()),
-    params{ learning_rate, 0.4, false }
+    params(params_use)
 {
   to->AddIncomingConnection(this);
   from->AddOutgoingConnection(this);

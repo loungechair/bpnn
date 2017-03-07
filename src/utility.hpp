@@ -15,6 +15,19 @@ void adjacent_pairs(ForwardIterator first, ForwardIterator last, Function f)
   }
 }
 
+
+class Timer
+{
+public:
+  Timer(const std::string& name);
+  void Start();
+  double Stop();
+  double GetTime();
+
+private:
+  
+};
+
 }
 
 }

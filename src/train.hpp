@@ -29,6 +29,12 @@ public:
     return network.FeedForward(input_pattern);
   }
 
+  dblscalar TotalError(const dblmatrix& target_pattern)
+  {
+    return network.TotalError(target_pattern);
+  }
+
+
   std::vector<std::shared_ptr<Layer>> GetLayers() const { return network.layers; }
   std::vector<std::shared_ptr<Connection>> GetConnections() const { return network.connections; }
 
@@ -87,7 +93,7 @@ struct BackpropTrainingParameters
   // stop when either we hit the maximum number of epochs, or the
   // total error falls below min_error.
   int       max_epochs;
-  dblscalar min_error;
+  dblscalar min_error; // NOT USED
 };
 
 
@@ -123,7 +129,7 @@ class BackpropLayer
   friend class BackpropTrainingAlgorithm;
   
 public:
-  BackpropLayer(NetworkTrainer& ntr_use, const BackpropTrainingParameters& params, Layer* layer_use);
+  BackpropLayer(NetworkTrainer& ntr_use, const BackpropTrainingParameters& params, Layer* layer_use, const ErrorFunction* error_fn_use);
 
   template <typename RngType>
   void InitializeBiases(RngType& randgen)
@@ -135,6 +141,10 @@ public:
 
   int Size() const { return layer->Size(); }
   int BatchSize() const { return layer->BatchSize(); }
+
+  template <typename ActivationFunctionType, typename ErrorFunctionType>
+  void CalculateDelta(const dblvector& target,
+    ActivationFunctionType actf, ErrorFunctionType errf);
 
   void CalculateActivationDerivative()
   {
@@ -160,7 +170,7 @@ public:
 
   void CalculateDelta();  // at hidden layers
 
-  void CalculateDelta(const dblmatrix& target, std::shared_ptr<ErrorFunction> error_fn); // for output layer
+  void CalculateDelta(const dblmatrix& target); // for output layer
 
   void AddIncomingConnection(BackpropConnection* c) { incoming.push_back(c); }
   void AddOutgoingConnection(BackpropConnection* c) { outgoing.push_back(c); }
@@ -181,6 +191,8 @@ private:
   dblmatrix delta;
 
   dblvector d_bias;        // delta for bias
+
+  const ErrorFunction* error_fn;
 };
 
 
@@ -192,7 +204,7 @@ public:
   BackpropConnection(std::shared_ptr<Connection> connection_use,
                      BackpropLayer* from,
                      BackpropLayer* to,
-                     double learning_rate_use);
+                     const BackpropTrainingParameters& params);
 
   template <typename RngType>
   void InitializeWeights(RngType& randgen)
@@ -211,7 +223,7 @@ public:
 
   void UpdateWeights()
   {
-    if (normalize_gradient) {
+    if (params.normalize_gradient) {
       delta_w.Normalize();
     }
     nn::accum_A_alphaB(delta_w,  params.momentum, delta_w_previous);
@@ -228,10 +240,6 @@ private:
   dblmatrix&     weights;
   dblmatrix      delta_w;
   dblmatrix      delta_w_previous;
-
-  double learning_rate;
-  double momentum;
-  bool   normalize_gradient;
 
   BackpropTrainingParameters params;
 };
