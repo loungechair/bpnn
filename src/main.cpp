@@ -76,14 +76,18 @@ main(int argc, char *argv[])
 
   //auto hid_act = std::make_shared<nn::SigmoidActivation>(-1, 1);
   auto hid_act = std::make_shared<nn::TanhActivation>();
-  auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
-  //auto out_act = std::make_shared<nn::LinearActivation>();
+  //auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
+  auto out_act = std::make_shared<nn::LinearActivation>();
 
-  auto err_function = std::make_shared<nn::CrossEntropyError>();
+  //auto err_function = std::make_shared<nn::CrossEntropyError>();
+  auto err_function = std::make_shared<nn::SquaredError>();
 
-  nn::Network network({4, 24, 48, 64, 48, 24, 3}, 151, hid_act, out_act, err_function);
+  nn::Network network({4, 24, 24, 3}, 151, hid_act, out_act, err_function);
 
-  nn::train::BackpropTrainingParameters params{ 0.0001, 0.25, true, 100'000, 0.01 };
+  nn::ErrorStatistics<double> err_stats(network);
+  network.Attach(&err_stats);
+
+  nn::train::BackpropTrainingParameters params{ 0.0035, 0.5, true, 1'000, 1 };
   
   auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(network, params);
 
@@ -96,4 +100,9 @@ main(int argc, char *argv[])
 
   std::chrono::duration<double> total_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time);
   std::cout << "Total time was " << total_time.count() << std::endl;
+
+  std::cout << std::endl;
+  for (auto& p : err_stats.GetTotalError()) {
+    std::cout << p << std::endl;
+  }
 }

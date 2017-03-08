@@ -24,6 +24,10 @@ public:
   {
   }
 
+  void SetCurrentEpoch(int epoch) {
+    network.current_epoch = epoch;
+  }
+
   dblmatrix FeedForward(const dblmatrix& input_pattern)
   {
     return network.FeedForward(input_pattern);
@@ -33,6 +37,8 @@ public:
   {
     return network.TotalError(target_pattern);
   }
+
+  void Notify() { network.Notify(); }
 
 
   std::vector<std::shared_ptr<Layer>> GetLayers() const { return network.layers; }

@@ -45,7 +45,9 @@ Network::Network(const std::vector<int>& layer_sizes,
   std::shared_ptr<ActivationFunction> out_act_fn,
   std::shared_ptr<ErrorFunction> err_function_use)
   : batch_size(batch_size_use),
-    err_function(err_function_use)
+    err_function(err_function_use),
+    current_epoch(0),
+    last_error(0)
 {
   int num_hid = layer_sizes.size() - 1;
   
@@ -84,7 +86,7 @@ Network::FeedForward(const dblmatrix& input_pattern)
 dblscalar
 Network::TotalError(const dblmatrix& target_pattern)
 {
-  return layers.back()->TotalError(target_pattern, err_function.get());
+  return (last_error = layers.back()->TotalError(target_pattern, err_function.get()));
 }
 
 dblscalar

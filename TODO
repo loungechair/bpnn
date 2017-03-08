@@ -1,6 +1,7 @@
 * Add better reporting for total error in network
 * Add Softmax error
 * Fix sending backprop parameters into network
+* Add stopping criteria
 * Additional backprop options
   - Weight decay
   - delta-bar-delta

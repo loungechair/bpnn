@@ -73,6 +73,8 @@ BackpropTrainingAlgorithm::Train()
     return;
   }
   for (int epoch = 0; epoch < params.max_epochs; ++epoch) {
+    ntr.SetCurrentEpoch(epoch);
+
     // for batch in training_data...
 
     const auto& in = training_data->in;
@@ -80,7 +82,16 @@ BackpropTrainingAlgorithm::Train()
 
     ntr.FeedForward(in);
 
-    std::cout << epoch << "\t" << ntr.TotalError(targ) << std::endl;
+    ntr.Notify();
+
+    dblscalar total_error = ntr.TotalError(targ);
+
+    //std::cout << epoch << "\t" << total_error << std::endl;
+
+    if (total_error < params.min_error) {
+      std::cout << epoch << "\t" << total_error << std::endl;
+      break;
+    }
 
     // delta at output layer
     auto& output_layer = bp_layers.back();

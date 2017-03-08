@@ -30,7 +30,7 @@ class CrossEntropyError : public ErrorFunction
 {
   double E(double x, double y) const override
   {
-    return -y*log(x) - (1 - y)*log(1 - x);
+    return ((x > 0) ? -y*log(x) : 0) - (1 < 0  ? (1 - y)*log(1 - x) : 0);
   }
 
   double dE(double x, double y) const override

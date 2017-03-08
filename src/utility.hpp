@@ -1,5 +1,7 @@
 #pragma once
 
+#include <set>
+
 namespace nn {
 namespace utility {
 
@@ -26,6 +28,41 @@ public:
 
 private:
   
+};
+
+
+
+
+class Observer
+{
+public:
+  virtual ~Observer() {}
+
+  virtual void Update() = 0;
+};
+
+
+class Observable
+{
+public:
+  void Attach(Observer* obs)
+  {
+    observers.insert(obs);
+  }
+  void Detatch(Observer* obs)
+  {
+    observers.erase(obs);
+  }
+  
+  void Notify()
+  {
+    for (auto& obs : observers) {
+      obs->Update();
+    }
+  }
+
+private:
+  std::set<Observer*> observers;
 };
 
 }

@@ -3,6 +3,7 @@
 #include "matrix.hpp"
 #include "activation.hpp"
 #include "error.hpp"
+#include "utility.hpp"
 
 #include <vector>
 #include <memory>
@@ -28,29 +29,45 @@ namespace nn
 class Network;
 
 template <typename T>
-class ErrorStatistics
+class ErrorStatistics : public utility::Observer
 {
+  struct ErrorData
+  {
+    int num_patterns;
+    T total_error;
+    T variance;
+  };
+
 public:
-  ErrorStatistics(const int& network_use, int num_patterns_use);
+  ErrorStatistics(const Network& network_use)
+    : network(network_use)
+  {}
+
+  void Update() override
+  {
+    int epoch = network.GetCurrentEpoch();
+    AccumulateErrorStatistics(epoch);
+  }
 
   void AccumulateErrorStatistics(int epoch)
   {
-    T total_error = 0;
+    if (total_error.size() < epoch + 1) {
+      total_error.resize(std::max(1024, 2*epoch));
+    }
+    total_error[epoch] += network.GetLastError();
   }
 
   T GetTotalError(int epoch) const { return total_error[epoch]; }
   std::vector<T> GetTotalError() const { return total_error; }
 
-  T GetAverageError(int epoch) const { return total_errror[epoch] / num_patterns[epoch]; }
-  std::vector<T> GetAverageError() const;
+  //T GetAverageError(int epoch) const { return total_errror[epoch] / num_patterns[epoch]; }
+  //std::vector<T> GetAverageError() const;
 
 private:
   const Network& network;
   // following vectors are indexed by epoch
   std::vector<T> total_error;
-  std::vector<T> mean;
-  std::vector<T> M2;
-  std::vector<int> num_patterns;
+  //std::vector<int> num_patterns;
 };
 
 
@@ -157,7 +174,7 @@ private:
 
 
 
-class Network
+class Network : public utility::Observable
 {
   friend train::NetworkTrainer;
 
@@ -187,8 +204,12 @@ public:
   std::vector<std::shared_ptr<Layer>>& GetLayers() { return layers; }
   std::vector<std::shared_ptr<Connection>>& GetConnections() { return connections; }
 
+  int GetCurrentEpoch() const { return current_epoch; }
+  double GetLastError() const { return last_error; }
+
 private:
   int batch_size;
+  int current_epoch;
 
   double last_error; // total error across all patterns from last call to FeedForward
 
