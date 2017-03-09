@@ -72,7 +72,8 @@ BackpropTrainingAlgorithm::Train()
     std::cerr << "No training data selected." << std::endl;
     return;
   }
-  for (int epoch = 0; epoch < params.max_epochs; ++epoch) {
+
+  for (int epoch = 0; epoch <= params.max_epochs; ++epoch) {
     ntr.SetCurrentEpoch(epoch);
 
     // for batch in training_data...
@@ -81,10 +82,9 @@ BackpropTrainingAlgorithm::Train()
     const auto& targ = training_data->out;
 
     ntr.FeedForward(in);
+    dblscalar total_error = ntr.TotalError(targ);
 
     ntr.Notify();
-
-    dblscalar total_error = ntr.TotalError(targ);
 
     //std::cout << epoch << "\t" << total_error << std::endl;
 
@@ -115,26 +115,6 @@ BackpropTrainingAlgorithm::Train()
     for (auto& c : bp_connections) {
       c->UpdateWeights();
     }
-  }
-
-  auto& in = training_data->in;
-  auto& targ = training_data->out;
-
-  auto& output = ntr.FeedForward(in);
-
-  for (int pattern = 0; pattern < output.Rows(); ++pattern) {
-    auto& in_p = in.GetRow(pattern);
-    auto& out_p = output.GetRow(pattern);
-
-    std::cout << "{";
-    for (auto& x : in_p) {
-      std::cout << std::fixed << std::setprecision(1) << std::setw(8) << x;
-    }
-    std::cout << "} --> {";
-    for (auto& x : out_p) {
-      std::cout << std::fixed << std::setprecision(4) << std::setw(8) << x;
-    }
-    std::cout << "}" << std::endl;
   }
 }
 

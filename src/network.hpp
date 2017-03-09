@@ -6,6 +6,7 @@
 #include "utility.hpp"
 
 #include <vector>
+#include <map>
 #include <memory>
 #include <algorithm>
 
@@ -14,63 +15,8 @@
 #include <cassert>
 
 
-/*
- * Error statistics
- * - Total error
- * - Average error per pattern
- * - number of patterns
- * - total error by unit
- * - total error by epoch
- */
-
-
 namespace nn
 {
-class Network;
-
-template <typename T>
-class ErrorStatistics : public utility::Observer
-{
-  struct ErrorData
-  {
-    int num_patterns;
-    T total_error;
-    T variance;
-  };
-
-public:
-  ErrorStatistics(const Network& network_use)
-    : network(network_use)
-  {}
-
-  void Update() override
-  {
-    int epoch = network.GetCurrentEpoch();
-    AccumulateErrorStatistics(epoch);
-  }
-
-  void AccumulateErrorStatistics(int epoch)
-  {
-    if (total_error.size() < epoch + 1) {
-      total_error.resize(std::max(1024, 2*epoch));
-    }
-    total_error[epoch] += network.GetLastError();
-  }
-
-  T GetTotalError(int epoch) const { return total_error[epoch]; }
-  std::vector<T> GetTotalError() const { return total_error; }
-
-  //T GetAverageError(int epoch) const { return total_errror[epoch] / num_patterns[epoch]; }
-  //std::vector<T> GetAverageError() const;
-
-private:
-  const Network& network;
-  // following vectors are indexed by epoch
-  std::vector<T> total_error;
-  //std::vector<int> num_patterns;
-};
-
-
 // forward declarations
 class Layer;
 class Connection;
@@ -221,6 +167,73 @@ private:
   void AddConnection(Layer* from, Layer* to);
 };
 
+
+
+template <typename T>
+class ErrorStatistics : public utility::Observer
+{
+  struct ErrorData
+  {
+    int epoch;
+    int num_patterns;
+    T total_error;
+    T mean;
+    T M2;
+  };
+
+public:
+  ErrorStatistics(int save_freq_use, const Network& network_use)
+    : save_frequency(save_freq_use),
+    network(network_use)
+  {}
+
+  void Update() override
+  {
+    int epoch = network.GetCurrentEpoch();
+    AccumulateErrorStatistics(epoch);
+  }
+
+  void AccumulateErrorStatistics(int epoch)
+  {
+    if ((epoch == 0) || (epoch % save_frequency == 0)) {
+      total_error[epoch] += network.GetLastError();
+    }
+  }
+
+  T GetTotalError(int epoch) const { return total_error[epoch]; }
+
+  auto begin() { return total_error.begin(); }
+  auto end() { return total_error.end(); }
+  auto begin() const { return total_error.begin(); }
+  auto end() const { return total_error.end(); }
+
+private:
+  const Network& network;
+  int save_frequency; // how many epochs between saving data.  set to 1 to save all the time
+  std::map<int, T> total_error;
+};
+
+
+class ErrorPrinter : public utility::Observer
+{
+public:
+  ErrorPrinter(int save_freq_use, const Network& network_use)
+    : save_frequency(save_freq_use),
+    network(network_use)
+  {}
+
+  void Update() override
+  {
+    int epoch = network.GetCurrentEpoch();
+    if ((epoch == 0) || (epoch % save_frequency == 0)) {
+      std::cout << epoch << "\t" << network.GetLastError() << std::endl;
+    }
+  }
+
+private:
+  const Network& network;
+  int save_frequency; // how many epochs between saving data.  set to 1 to save all the time
+};
 
 
 }

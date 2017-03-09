@@ -308,6 +308,12 @@ public:
   {
   }
 
+  CategoryEncoder(const std::vector<CategoryType>& categories, double on_value_use = 1.0, double off_value_use = 0.0)
+    : CategoryEncoder{ on_value_use, off_value_use }
+  {
+    AddCategories(categories);
+  }
+
 
   std::vector<double> EncodeField(const void* field_ptr) override
   {
