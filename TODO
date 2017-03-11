@@ -1,10 +1,10 @@
-* Add better reporting for total error in network
 * Add Softmax error
 * Fix sending backprop parameters into network
 * Add stopping criteria
 * Additional backprop options
   - Weight decay
   - delta-bar-delta
+* Clean up N-W weight initialization
 * Clean up using Network/NetworkTrainer class in Backprop classes
 * Add rectified linear unit/softplus activation
 * Make sure input encoders work with float data
@@ -18,4 +18,4 @@ DONE
 * Add Cross-entropy error
 * Add tanh activation
 * Add weight update normalization option
-  
+* Add better reporting for total error in network

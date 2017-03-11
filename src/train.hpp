@@ -95,11 +95,12 @@ struct BackpropTrainingParameters
 {
   dblscalar learning_rate;
   dblscalar momentum;
+  dblscalar weight_decay;
   bool      normalize_gradient;
   // stop when either we hit the maximum number of epochs, or the
   // total error falls below min_error.
   int       max_epochs;
-  dblscalar min_error; // NOT USED
+  dblscalar min_error;
 };
 
 
@@ -149,7 +150,7 @@ public:
   int BatchSize() const { return layer->BatchSize(); }
 
   template <typename ActivationFunctionType, typename ErrorFunctionType>
-  void CalculateDelta(const dblvector& target,
+  void CalculateDelta2(const dblmatrix& target,
     ActivationFunctionType actf, ErrorFunctionType errf);
 
   void CalculateActivationDerivative()
@@ -216,6 +217,14 @@ public:
   void InitializeWeights(RngType& randgen)
   {
     std::transform(begin(weights), end(weights), begin(weights), std::ref(randgen));
+
+    NW_WeightAdj();
+  }
+
+  void NW_WeightAdj()
+  {
+    dblscalar beta = 0.7*pow(layer_to->Size(), 1.0 / (layer_from->Size()));
+    weights.NormalizeEachRow(beta);
   }
 
   void AccumulateNetDelta(dblmatrix& delta);
@@ -232,9 +241,14 @@ public:
     if (params.normalize_gradient) {
       delta_w.Normalize();
     }
-    nn::accum_A_alphaB(delta_w,  params.momentum, delta_w_previous);
-    nn::accum_A_alphaB(weights, -params.learning_rate, delta_w);
-    delta_w_previous = delta_w;
+    if (params.momentum > 0) {
+      nn::accum_A_alphaB(delta_w, params.momentum, delta_w_previous);
+      delta_w_previous = delta_w;
+    }
+    if (params.weight_decay > 0) {
+      std::for_each(begin(weights), end(weights), [&](auto& x) { x *= (1 - params.weight_decay); });
+    }
+    nn::accum_A_alphaB(weights, -params.learning_rate/* / layer_from->BatchSize()*/, delta_w);
     std::memset(delta_w.GetPtr(), 0, sizeof(double)*delta_w.Size());
   }
 
@@ -251,6 +265,39 @@ private:
 };
 
 
+
+
+
+
+
+
+//template <>
+//void BackpropLayer::CalculateDelta2(const dblmatrix& target, SigmoidActivation actf, CrossEntropyError errf)
+//{
+//  std::transform(begin(activation), end(activation), begin(target), begin(delta), std::minus<dblscalar>());
+//}
+
+
+template <typename ActivationFunctionType, typename ErrorFunctionType>
+void BackpropLayer::CalculateDelta2(const dblmatrix& target, ActivationFunctionType actf, ErrorFunctionType errf)
+{
+  // // calcualte error into delta
+  std::transform(begin(activation), end(activation),
+    begin(target),
+    begin(delta),
+    [&](double x, double y) { return errf.dE(x, y); });
+
+  auto& net_in = layer->GetNetInput();
+
+  std::transform(net_in.begin(), net_in.end(), activation.begin(), activation_df.begin(),
+    [&](auto x, auto fx) { return actf.df(x, fx); });
+
+  // scale by derivative of activation
+  std::transform(begin(delta), end(delta),
+    begin(activation_df),
+    begin(delta),
+    std::multiplies<>());
+}
 
 
 

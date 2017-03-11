@@ -49,7 +49,7 @@ BackpropTrainingAlgorithm::InitializeNetwork()
 {
   auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
   std::mt19937 mt_rand(seed);
-  auto randgen = std::bind(std::uniform_real_distribution<double>(-0.2, 0.2), mt_rand);
+  auto randgen = std::bind(std::uniform_real_distribution<double>(-0.5, 0.5), mt_rand);
 
   int i = 0;
   for (auto& layer : bp_layers) {
@@ -149,9 +149,13 @@ BackpropLayer::CalculateDelta()
 }
 
 
-void 
+
+void
 BackpropLayer::CalculateDelta(const dblmatrix& target) // for output layer
 {
+  //CalculateDelta2(target, *layer->GetActivationFunction(), *error_fn);
+  //return;
+
   // // calcualte error into delta
   std::transform(begin(activation), end(activation),
     begin(target),
@@ -164,6 +168,7 @@ BackpropLayer::CalculateDelta(const dblmatrix& target) // for output layer
     begin(delta),
     std::multiplies<>());
 }
+
 
 BackpropConnection::BackpropConnection(std::shared_ptr<Connection> connection_use,
                                        BackpropLayer* from,

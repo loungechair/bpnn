@@ -77,7 +77,8 @@ main(int argc, char *argv[])
 
   auto err_function = std::make_shared<nn::CrossEntropyError>();
 
-  nn::Network network({4, 120, 120, 3}, 151, hid_act, out_act, err_function);
+  nn::Network network({4, 240, 240, 3}, 151, hid_act, out_act, err_function);
+  //nn::Network network({ 4, 24, 24, 3 }, 151, hid_act, out_act, err_function);
 
   nn::ErrorStatistics<double> err_stats(10, network);
   nn::ErrorPrinter err_printer(100, network);
@@ -85,7 +86,7 @@ main(int argc, char *argv[])
   network.Attach(&err_stats);
   network.Attach(&err_printer);
 
-  nn::train::BackpropTrainingParameters params{ 0.0001, 0.25, true, 100'000, 0.1 };
+  nn::train::BackpropTrainingParameters params{ 0.0005, 0.9, 0, true, 100'000, 0.1 };
   
   auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(network, params);
 
@@ -96,6 +97,9 @@ main(int argc, char *argv[])
   train_timer.Start();
   tr->Train();
   train_timer.Stop();
+
+  std::cout << "Total time was " << train_timer.GetElapsedTimeAsString() << std::endl;
+  return 0;
 
   auto& in = training_data.in;
   auto& targ = training_data.out;

@@ -1,6 +1,7 @@
 #include "matrix.hpp"
 
 #include <iostream>
+#include <cstring>
 
 #ifdef _WIN32
 #  include <mkl_cblas.h>
@@ -126,6 +127,25 @@ accum_y_alphax(std::vector<double>& y, double alpha, const std::vector<double>& 
 {
   cblas_daxpy(y.size(), alpha, &x[0], 1, &y[0], 1);
 }
+
+
+// A += x y^T
+template <>
+void accum_A_xyT(Matrix<float>& A, const typename Matrix<float>::VectorType& x, const typename Matrix<float>::VectorType& y)
+{
+  memset(A.GetPtr(), 0, A.Size() * sizeof(float));
+  cblas_sger(CblasRowMajor, A.Rows(), A.Cols(), 1.0f, &x[0], 1, &y[0], 1, A.GetPtr(), A.Cols());
+}
+
+
+// A += x y^T
+template <>
+void accum_A_xyT(Matrix<double>& A, const typename Matrix<double>::VectorType& x, const typename Matrix<double>::VectorType& y)
+{
+  memset(A.GetPtr(), 0, A.Size() * sizeof(double));
+  cblas_dger(CblasRowMajor, A.Rows(), A.Cols(), 1.0, &x[0], 1, &y[0], 1, A.GetPtr(), A.Cols());
+}
+
 
 
 }

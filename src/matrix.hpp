@@ -66,6 +66,11 @@ public:
     }
   }
 
+  int GetRowStartIndex(int row_num) const
+  {
+    return row_num * cols;
+  }
+
   std::pair<IteratorType, IteratorType> GetRowRange(int row_num)
   {
     auto start_iterator = data.begin() + row_num * cols;
@@ -95,7 +100,7 @@ public:
 
   void SetRowValues(int row_num, const dblvector& values)
   {
-    std::copy(std::begin(values), std::end(values), GetRowRange(row_num).first);
+    std::copy(std::begin(values), std::end(values), data.begin() + row_num * cols);
   }
 
   void SetData(const dblvector& values)
@@ -142,6 +147,25 @@ public:
     T norm = Norm();
     if (norm > 1.0) {
       cblas_dscal(data.size(), 1.0 / norm, &data[0], 1);
+    }
+  }
+
+  T* GetRowPtr(int row_num)
+  {
+    return &data[0] + GetRowStartIndex(row_num);
+  }
+
+  void NormalizeRow(int row_num, T desired_norm = 1.0)
+  {
+    T row_norm = cblas_dnrm2(cols, GetRowPtr(row_num), 1);
+    T scale_factor = desired_norm / row_norm;
+    cblas_dscal(cols, scale_factor, GetRowPtr(row_num), 1);
+  }
+
+  void NormalizeEachRow(T desired_norm = 1.0)
+  {
+    for (int row = 0; row < rows; ++row) {
+      NormalizeRow(row, desired_norm);
     }
   }
   
@@ -203,5 +227,10 @@ void accum_A_alphaB(Matrix<T>& A, T alpha, const Matrix<T>& B);
 // y += alpha x
 template <typename T>
 void accum_y_alphax(std::vector<T>& y, T alpha, const std::vector<T>& x);
+
+
+// A += x y^T
+template <typename T>
+void accum_A_xyT(Matrix<T>& A, const typename Matrix<T>::VectorType& x, const typename Matrix<T>::VectorType& y);
 
 } // namespace nn

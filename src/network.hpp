@@ -70,6 +70,7 @@ private:
   dblmatrix net_input;
   dblmatrix activation;
   dblvector bias;
+
   std::shared_ptr<ActivationFunction> activation_fn;
 
   std::vector<Connection *> incoming;
