@@ -35,8 +35,11 @@ class CrossEntropyError : public ErrorFunction
 
   double dE(double actual, double target) const override
   {
-    return (actual - target) / (actual*(1 - actual));
+    return (fabs(actual -1) < TOLERANCE) ? 0.0
+                                         : (actual - target) / (actual*(1 - actual));
   }
+private:
+  double TOLERANCE = 1e-10;
 };
 
 

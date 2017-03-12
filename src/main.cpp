@@ -98,9 +98,6 @@ main(int argc, char *argv[])
   tr->Train();
   train_timer.Stop();
 
-  std::cout << "Total time was " << train_timer.GetElapsedTimeAsString() << std::endl;
-  return 0;
-
   auto& in = training_data.in;
   auto& targ = training_data.out;
 
