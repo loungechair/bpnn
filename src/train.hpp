@@ -50,6 +50,9 @@ public:
   double* GetLayerBiasPtr(PtrType layer) { return &(layer->bias[0]); }
   template <typename PtrType>
   dblvector& GetLayerBias(PtrType layer) { return layer->bias; }
+  template <typename PtrType>
+  dblmatrix& GetLayerNetInput(PtrType layer) { return layer->net_input; }
+
   dblscalar* GetLayerActivationPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
   dblscalar* GetLayerNetInputPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
 
@@ -149,14 +152,10 @@ public:
   int Size() const { return layer->Size(); }
   int BatchSize() const { return layer->BatchSize(); }
 
-  template <typename ActivationFunctionType, typename ErrorFunctionType>
-  void CalculateDelta2(const dblmatrix& target,
-    ActivationFunctionType actf, ErrorFunctionType errf);
-
   void CalculateActivationDerivative()
   {
     auto fn = layer->GetActivationFunction();
-    auto& net_in = layer->GetNetInput();
+    auto& net_in = ntr.GetLayerNetInput(layer);
 
     std::transform(net_in.begin(), net_in.end(), activation.begin(), activation_df.begin(),
                    [&](auto x, auto fx) { return fn->df(x, fx); });
@@ -263,41 +262,6 @@ private:
 
   BackpropTrainingParameters params;
 };
-
-
-
-
-
-
-
-
-//template <>
-//void BackpropLayer::CalculateDelta2(const dblmatrix& target, SigmoidActivation actf, CrossEntropyError errf)
-//{
-//  std::transform(begin(activation), end(activation), begin(target), begin(delta), std::minus<dblscalar>());
-//}
-
-
-template <typename ActivationFunctionType, typename ErrorFunctionType>
-void BackpropLayer::CalculateDelta2(const dblmatrix& target, ActivationFunctionType actf, ErrorFunctionType errf)
-{
-  // // calcualte error into delta
-  std::transform(begin(activation), end(activation),
-    begin(target),
-    begin(delta),
-    [&](double x, double y) { return errf.dE(x, y); });
-
-  auto& net_in = layer->GetNetInput();
-
-  std::transform(net_in.begin(), net_in.end(), activation.begin(), activation_df.begin(),
-    [&](auto x, auto fx) { return actf.df(x, fx); });
-
-  // scale by derivative of activation
-  std::transform(begin(delta), end(delta),
-    begin(activation_df),
-    begin(delta),
-    std::multiplies<>());
-}
 
 
 

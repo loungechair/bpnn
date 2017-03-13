@@ -45,15 +45,12 @@ public:
   }
   
   void SetActivation(const dblmatrix& in)   { activation = in; } // for input layers
-  void CalculateActivation();                                 // for hidden layers
+  void CalculateActivation();                                    // for hidden layers
 
   int BatchSize() const { return batch_size; }
 
   const dblmatrix& GetActivation() const { return activation; }
   dblmatrix& GetActivation() { return activation; }
-  const dblmatrix& GetNetInput() const { return net_input; }
-
-  const dblscalar* GetActivationPtr() const { return activation.GetPtr(); }
 
   dblscalar TotalError(const dblmatrix& target_pattern, const ErrorFunction* error_fn);
 
@@ -148,9 +145,6 @@ public:
   dblmatrix FeedForward(const dblmatrix& input_pattern);
   dblscalar TotalError(const dblmatrix& target_pattern);
 
-  std::vector<std::shared_ptr<Layer>>& GetLayers() { return layers; }
-  std::vector<std::shared_ptr<Connection>>& GetConnections() { return connections; }
-
   int GetCurrentEpoch() const { return current_epoch; }
   double GetLastError() const { return last_error; }
 
@@ -173,15 +167,6 @@ private:
 template <typename T>
 class ErrorStatistics : public utility::Observer
 {
-  struct ErrorData
-  {
-    int epoch;
-    int num_patterns;
-    T total_error;
-    T mean;
-    T M2;
-  };
-
 public:
   ErrorStatistics(int save_freq_use, const Network& network_use)
     : save_frequency(save_freq_use),
