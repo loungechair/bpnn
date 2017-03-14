@@ -1,7 +1,5 @@
 #pragma once
 
-#include "matrix.hpp"
-
 namespace nn
 {
 
