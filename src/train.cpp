@@ -76,44 +76,49 @@ BackpropTrainingAlgorithm::Train()
   for (int epoch = 0; epoch <= params.max_epochs; ++epoch) {
     ntr.SetCurrentEpoch(epoch);
 
+    dblscalar total_error = 0;
+
     // for batch in training_data...
+    for (auto& batch = training_data->begin(); batch != training_data->end(); ++batch) {
+      const auto& in = batch->Input();
+      const auto& targ = batch->Output();
 
-    const auto& in = training_data->in;
-    const auto& targ = training_data->out;
+      ntr.FeedForward(in);
+      total_error += ntr.TotalError(targ);
 
-    ntr.FeedForward(in);
-    dblscalar total_error = ntr.TotalError(targ);
+      ntr.NotifyBatch();
 
-    ntr.Notify();
+      // delta at output layer
+      auto& output_layer = bp_layers.back();
+      output_layer->CalculateActivationDerivative();
+      output_layer->CalculateDelta(targ);
 
-    //std::cout << epoch << "\t" << total_error << std::endl;
+      for (int i = bp_layers.size() - 2; i >= 1; --i) {
+        bp_layers[i]->CalculateActivationDerivative();
+        bp_layers[i]->CalculateDelta();
+      }
+
+      for (int i = bp_layers.size() - 1; i >= 1; --i) {
+        bp_layers[i]->AccumulateBiasGradient();
+        bp_layers[i]->UpdateBias();
+      }
+    
+      for (auto& c : bp_connections) {
+        c->AccumulateGradients();
+      }
+    
+      for (auto& c : bp_connections) {
+        c->UpdateWeights();
+      }
+    }
+
+    ntr.NotifyEpoch();
+
+    //std::cout << "epoch " << epoch << '\t' << total_error << std::endl;
 
     if (total_error < params.min_error) {
       std::cout << epoch << "\t" << total_error << std::endl;
       break;
-    }
-
-    // delta at output layer
-    auto& output_layer = bp_layers.back();
-    output_layer->CalculateActivationDerivative();
-    output_layer->CalculateDelta(targ);
-
-    for (int i = bp_layers.size() - 2; i >= 1; --i) {
-      bp_layers[i]->CalculateActivationDerivative();
-      bp_layers[i]->CalculateDelta();
-    }
-
-    for (int i = bp_layers.size() - 1; i >= 1; --i) {
-      bp_layers[i]->AccumulateBiasGradient();
-      bp_layers[i]->UpdateBias();
-    }
-    
-    for (auto& c : bp_connections) {
-      c->AccumulateGradients();
-    }
-    
-    for (auto& c : bp_connections) {
-      c->UpdateWeights();
     }
   }
 }

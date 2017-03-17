@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include <iostream>
+#include <iomanip>
 
 #include <cassert>
 
@@ -28,6 +29,56 @@ namespace train
 class NetworkTrainer;
 }
 
+class TrainingData;
+
+
+template <typename T>
+class LayerInterface
+{
+public:
+
+  using VectorType = typename Matrix<T>::VectorType;
+  
+  void UpdateActivation(const TrainingData& training_data) = 0;
+
+  T TotalError(const TrainingData& training_data) = 0;
+  T TotalError(const VectorType& target) = 0;
+
+  VectorType GetActivation(int pattern) = 0;
+};
+
+
+template <typename T>
+class ActivationLayer : public LayerInterface<T>
+{
+public:
+
+private:
+  int max_batch_size;
+  int current_batch_size;
+  Matrix<T> net_input;
+  Matrix<T> activation;
+};
+
+template <typename T>
+class InputLayer : public LayerInterface<T>
+{
+public:
+
+private:
+  Matrix<T> *activation;
+};
+
+template <typename T>
+class InputActivationLayer : public LayerInterface<T>
+{
+public:
+
+private:
+  LayerInterface<T>* current_layer;
+  InputLayer input_layer;
+  ActivationLayer activation_layer;
+};
 
 
 class Layer
@@ -163,6 +214,14 @@ private:
 };
 
 
+class SimpleRecurrentNetwork
+{
+public:
+
+private:
+  Network ff_network;
+};
+
 
 template <typename T>
 class ErrorStatistics : public utility::Observer
@@ -173,11 +232,13 @@ public:
     network(network_use)
   {}
 
-  void Update() override
+  void UpdateBatch() override
   {
     int epoch = network.GetCurrentEpoch();
     AccumulateErrorStatistics(epoch);
   }
+
+  void UpdateEpoch() override {}
 
   void AccumulateErrorStatistics(int epoch)
   {
@@ -203,22 +264,37 @@ private:
 class ErrorPrinter : public utility::Observer
 {
 public:
-  ErrorPrinter(int save_freq_use, const Network& network_use)
+  ErrorPrinter(int save_freq_use, const Network& network_use, const utility::Timer* timer_use = nullptr)
     : save_frequency(save_freq_use),
-    network(network_use)
+      total_error(0.0),
+      network(network_use),
+      timer(timer_use)
   {}
 
-  void Update() override
+  void UpdateBatch() override
+  {
+    total_error += network.GetLastError();
+  }
+
+  void UpdateEpoch() override
   {
     int epoch = network.GetCurrentEpoch();
     if ((epoch == 0) || (epoch % save_frequency == 0)) {
-      std::cout << epoch << "\t" << network.GetLastError() << std::endl;
+      std::cout << std::setw(6) << epoch << ' ';
+      std::cout << std::setw(17) << std::setprecision(4) << std::fixed << total_error;
+      if (timer) {
+        std::cout << "   " << timer->GetElapsedTimeAsString();
+      }
+      std::cout << std::endl;
     }
+    total_error = 0.0;
   }
 
 private:
-  const Network& network;
   int save_frequency; // how many epochs between saving data.  set to 1 to save all the time
+  double total_error;
+  const Network& network;
+  const utility::Timer* timer;
 };
 
 

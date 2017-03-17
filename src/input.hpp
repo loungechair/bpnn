@@ -202,6 +202,7 @@ class FieldEncoder
 public:
   virtual std::vector<double> EncodeField(const void* field_ptr) = 0;
   virtual void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr) = 0;
+  virtual int Length() const = 0;
 };
 
 
@@ -222,7 +223,15 @@ public:
 
   std::vector<double> Encode(const InputType* data) const;
   void Decode(const std::vector<double>& input, InputType* data) const;
+  InputType Decode(const std::vector<double>& input) const;
 
+  int Length() const {
+    int length = 0;
+    for (auto& p : encoders) {
+      length += p.second->Length();
+    }
+    return length;
+  }
 
 private:
   std::map<int, std::shared_ptr<FieldEncoder>> encoders;
@@ -244,10 +253,12 @@ public:
     *(double *)field_ptr = *p;
     ++p;
   }
-  
+
+  int Length() const { return 1; }
 };
 
 
+// Has one output per category, turns one output on for a given category.
 class IntegerCategoryEncoder : public FieldEncoder
 {
 public:
@@ -259,6 +270,8 @@ public:
   std::vector<double> EncodeField(const void* field_ptr);
   void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr);
 
+  int Length() const { return empty_pattern.size(); }
+
 private:
   int min_value;
   int max_value;
@@ -269,8 +282,7 @@ private:
 };
 
 
-
-
+// Converts integer to binary
 class IntegerToBinaryEncoder : public FieldEncoder
 {
 public:
@@ -281,6 +293,8 @@ public:
   
   std::vector<double> EncodeField(const void* field_ptr) override;
   void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr);
+
+  int Length() const { return empty_pattern.size(); }
 
 private:
   int max_value;
@@ -344,7 +358,6 @@ public:
       int id = category_id.size();
       category_id.insert(std::make_pair(category, id));
       category_name.insert(std::make_pair(id, category));
-      empty_pattern = std::vector<double>(category_id.size(), off_value);
       int_encoder = std::make_shared<IntegerEncoderType>(0,
                                                          category_id.size() - 1,
                                                          on_value,
@@ -359,20 +372,21 @@ public:
     }
   }
 
+  int Length() const { return int_encoder->Length(); }
+
 private:
   double on_value;
   double off_value;
   
   std::map<CategoryType, int> category_id;
   std::map<int, CategoryType> category_name;
-  std::vector<double> empty_pattern;
 
   std::shared_ptr<IntegerEncoderType> int_encoder;
 };
 
 
 
-
+// Scales from [a, b] to [c, d]
 class DoubleScaleEncoder : public FieldEncoder
 {
 public:
@@ -380,6 +394,8 @@ public:
 
   std::vector<double> EncodeField(const void* field_ptr) override;
   void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr) override;
+
+  int Length() const { return 1; }
 
 private:
   double in_min;
@@ -389,6 +405,7 @@ private:
 };
 
 
+// Scales x to (x - mu)/sigma
 class DoubleNormalizeEncoder : public FieldEncoder
 {
 public:
@@ -397,11 +414,12 @@ public:
   std::vector<double> EncodeField(const void* field_ptr) override;
   void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr) override;
 
+  int Length() const { return 1; }
+
 private:
   double mean;
   double std_dev;
 };
-
 
 
 
@@ -437,6 +455,22 @@ InputEncoder<InputType>::Decode(const std::vector<double>& input, InputType* dat
     
     encoder.second->DecodeField(p, (void *)field_ptr);
   }
+}
+
+template <typename InputType>
+InputType
+InputEncoder<InputType>::Decode(const std::vector<double>& input) const
+{
+  InputType data;
+  const char* base_ptr = (char *)&data;
+  auto p = input.begin();
+
+  for (auto& encoder : encoders) {
+    const char *field_ptr = base_ptr + encoder.first;
+
+    encoder.second->DecodeField(p, (void *)field_ptr);
+  }
+  return data;
 }
 
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "trainingdata.hpp"
 #include "network.hpp"
 #include "input.hpp"
 #include "utility.hpp"
@@ -38,7 +39,8 @@ public:
     return network.TotalError(target_pattern);
   }
 
-  void Notify() { network.Notify(); }
+  void NotifyBatch() { network.NotifyBatch(); }
+  void NotifyEpoch() { network.NotifyEpoch(); }
 
 
   std::vector<std::shared_ptr<Layer>> GetLayers() const { return network.layers; }
@@ -116,7 +118,7 @@ public:
   void InitializeNetwork() override;
   void Train() override;
 
-  void SetTrainingData(input::TrainingData* td) { training_data = td; }
+  void SetTrainingData(const std::vector<Batch>* td) { training_data = td; }
   
 private:
   NetworkTrainer ntr;
@@ -128,7 +130,7 @@ private:
 
   BackpropTrainingParameters params;
 
-  nn::input::TrainingData* training_data;
+  const std::vector<Batch>* training_data;
 };
 
 

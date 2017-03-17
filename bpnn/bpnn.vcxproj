@@ -128,6 +128,7 @@
     <ClInclude Include="..\src\matrix.hpp" />
     <ClInclude Include="..\src\network.hpp" />
     <ClInclude Include="..\src\train.hpp" />
+    <ClInclude Include="..\src\trainingdata.hpp" />
     <ClInclude Include="..\src\utility.hpp" />
   </ItemGroup>
   <ItemGroup>

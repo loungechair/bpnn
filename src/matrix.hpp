@@ -66,9 +66,26 @@ public:
     }
   }
 
+  int AppendRow(const dblmatrix& new_row)
+  {
+    if (new_row.size() != cols) {
+      throw "Wrong vector length!";
+    }
+    rows++;
+    size += cols;
+    data.insert(end(data), begin(new_row), end(new_row));
+  }
+
   int GetRowStartIndex(int row_num) const
   {
     return row_num * cols;
+  }
+
+  std::pair<ConstIteratorType, ConstIteratorType> GetRowRange(int row_num) const
+  {
+    auto start_iterator = data.begin() + row_num * cols;
+    auto end_iterator = start_iterator + cols;
+    return std::make_pair(start_iterator, end_iterator);
   }
 
   std::pair<IteratorType, IteratorType> GetRowRange(int row_num)
@@ -82,7 +99,7 @@ public:
 
   const RowType GetRow(int row_num) const { return RowType(GetRowRange(row_num)); }
 
-  VectorType GetRowValues(int row_num)
+  VectorType GetRowValues(int row_num) const
   {
     auto range = GetRowRange(row_num);
     return dblvector(range.first, range.second);
@@ -169,12 +186,12 @@ public:
     }
   }
   
-  void print()
+  void print() const
   {
     int idx = 0;
     for (int r = 0; r < rows; ++r) {
       for (int c = 0; c < cols; ++c) {
-        std::cout << data[idx++] << "\t";
+        std::cout << data[idx++] << " ";
       }
       std::cout << std::endl;
     }
