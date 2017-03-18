@@ -51,12 +51,9 @@ BackpropTrainingAlgorithm::InitializeNetwork()
   std::mt19937 mt_rand(seed);
   auto randgen = std::bind(std::uniform_real_distribution<double>(-0.5, 0.5), mt_rand);
 
-  int i = 0;
   for (auto& layer : bp_layers) {
     layer->InitializeBiases(randgen);
   }
-
-  i = 0;
   for (auto& conn : bp_connections) {
     conn->InitializeWeights(randgen);
   }
@@ -138,6 +135,27 @@ BackpropLayer::BackpropLayer(NetworkTrainer& ntr_use, const BackpropTrainingPara
 }
 
 
+template <typename RngType>
+void
+BackpropLayer::InitializeBiases(RngType& randgen)
+{
+  auto& bias = ntr.GetLayerBias(layer);
+
+  std::transform(begin(bias), end(bias), begin(bias), std::ref(randgen));
+}
+
+
+void
+BackpropLayer::CalculateActivationDerivative()
+{
+  auto fn = layer->GetActivationFunction();
+  auto& net_in = ntr.GetLayerNetInput(layer);
+
+  std::transform(net_in.begin(), net_in.end(), activation.begin(), activation_df.begin(),
+                 [&](auto x, auto fx) { return fn->df(x, fx); });
+}
+
+
 
 void
 BackpropLayer::CalculateDelta()
@@ -192,12 +210,48 @@ BackpropConnection::BackpropConnection(std::shared_ptr<Connection> connection_us
 }
 
 
+template <typename RngType>
+void
+BackpropConnection::InitializeWeights(RngType& randgen)
+{
+  std::transform(begin(weights), end(weights), begin(weights), std::ref(randgen));
+
+  NW_WeightAdj();
+}
+
+
 void
 BackpropConnection::AccumulateNetDelta(dblmatrix& delta)
 {
   nn::accum_A_BC(delta, layer_to->GetDelta(), weights);
 }
 
+
+void
+BackpropConnection::AccumulateGradients()
+{
+  const auto& delta = layer_to->GetDelta();
+  const auto& activation = layer_from->GetActivation();
+  nn::accum_A_BtC(delta_w, delta, activation);
+}
+
+
+void
+BackpropConnection::UpdateWeights()
+{
+  if (params.normalize_gradient) {
+    delta_w.Normalize();
+  }
+  if (params.momentum > 0) {
+    nn::accum_A_alphaB(delta_w, params.momentum, delta_w_previous);
+    delta_w_previous = delta_w;
+  }
+  if (params.weight_decay > 0) {
+    std::for_each(begin(weights), end(weights), [&](auto& x) { x *= (1 - params.weight_decay); });
+  }
+  nn::accum_A_alphaB(weights, -params.learning_rate/* / layer_from->BatchSize()*/, delta_w);
+  std::memset(delta_w.GetPtr(), 0, sizeof(double)*delta_w.Size());
+}
 
 
 }

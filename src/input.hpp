@@ -18,41 +18,14 @@ namespace nn
 namespace input
 {
 
-class TrainingData
-{
-public:
-  TrainingData(int pairs, int in_size, int out_size)
-    : in(pairs, in_size),
-      out(pairs, out_size)
-  {}
-
-  TrainingData(const std::vector<dblvector>& input_use,
-               const std::vector<dblvector>& output_use)
-    : in(input_use),
-      out(output_use)
-  {
-    assert(in.Rows() == out.Rows());
-  }
-
-  void SetPair(int row, const dblvector& in_use, const dblvector& out_use)
-  {
-    in.SetRowValues(row, in_use);
-    out.SetRowValues(row, out_use);
-  }
-
-//private:
-  dblmatrix in;
-  dblmatrix out;
-};
-
-
-
 template <typename CategoryType>
 class CategoryStatistics
 {
 public:
 
   typedef CategoryType type;
+
+  CategoryStatistics() : num_values(0) {}
 
   void ProcessValue(const CategoryType& category)
   {
@@ -163,13 +136,13 @@ private:
 template <typename DataType, typename InputType>
 void CalculateFieldStatistic(int offset,
                              const std::vector<InputType>& data,
-                             std::shared_ptr<ScalarFieldStatistics<DataType>> stat)
+                             ScalarFieldStatistics<DataType>& stat)
 {
   for (auto& item : data) {
     char* intype = (char*)(&item);
     DataType x = *(DataType *)(intype + offset);
 
-    stat->ProcessValue(x);
+    stat.ProcessValue(x);
   }
 }
 

@@ -25,7 +25,7 @@ void adjacent_pairs(ForwardIterator first, ForwardIterator last, Function f)
 class Timer
 {
 public:
-  Timer() : running(false) {}
+  Timer() : running(false), elapsed_time(0) {}
 
   void Start()
   {

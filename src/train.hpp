@@ -20,7 +20,7 @@ namespace train
 class NetworkTrainer
 {
 public:
-  NetworkTrainer(Network& network_use)
+  explicit NetworkTrainer(Network& network_use)
     : network(network_use)
   {
   }
@@ -143,26 +143,12 @@ class BackpropLayer
 public:
   BackpropLayer(NetworkTrainer& ntr_use, const BackpropTrainingParameters& params, Layer* layer_use, const ErrorFunction* error_fn_use);
 
-  template <typename RngType>
-  void InitializeBiases(RngType& randgen)
-  {
-    auto& bias = ntr.GetLayerBias(layer);
-
-    std::transform(begin(bias), end(bias), begin(bias), std::ref(randgen));
-  }
+  template <typename RngType> void InitializeBiases(RngType& randgen);
 
   int Size() const { return layer->Size(); }
   int BatchSize() const { return layer->BatchSize(); }
 
-  void CalculateActivationDerivative()
-  {
-    auto fn = layer->GetActivationFunction();
-    auto& net_in = ntr.GetLayerNetInput(layer);
-
-    std::transform(net_in.begin(), net_in.end(), activation.begin(), activation_df.begin(),
-                   [&](auto x, auto fx) { return fn->df(x, fx); });
-  }
-
+  void CalculateActivationDerivative();
 
   void AccumulateBiasGradient()
   {
@@ -215,12 +201,7 @@ public:
                      const BackpropTrainingParameters& params);
 
   template <typename RngType>
-  void InitializeWeights(RngType& randgen)
-  {
-    std::transform(begin(weights), end(weights), begin(weights), std::ref(randgen));
-
-    NW_WeightAdj();
-  }
+  void InitializeWeights(RngType& randgen);
 
   void NW_WeightAdj()
   {
@@ -230,28 +211,9 @@ public:
 
   void AccumulateNetDelta(dblmatrix& delta);
 
-  void AccumulateGradients()
-  {
-    const auto& delta = layer_to->GetDelta();
-    const auto& activation = layer_from->GetActivation();
-    nn::accum_A_BtC(delta_w, delta, activation);
-  }
+  void AccumulateGradients();
 
-  void UpdateWeights()
-  {
-    if (params.normalize_gradient) {
-      delta_w.Normalize();
-    }
-    if (params.momentum > 0) {
-      nn::accum_A_alphaB(delta_w, params.momentum, delta_w_previous);
-      delta_w_previous = delta_w;
-    }
-    if (params.weight_decay > 0) {
-      std::for_each(begin(weights), end(weights), [&](auto& x) { x *= (1 - params.weight_decay); });
-    }
-    nn::accum_A_alphaB(weights, -params.learning_rate/* / layer_from->BatchSize()*/, delta_w);
-    std::memset(delta_w.GetPtr(), 0, sizeof(double)*delta_w.Size());
-  }
+  void UpdateWeights();
 
 private:
   std::shared_ptr<Connection> connection;

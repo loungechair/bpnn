@@ -44,10 +44,10 @@ private:
 
 
 template <typename InputType, typename OutputType>
-class TrainData
+class TrainingData
 {
 public:
-  TrainData(int batch_size_use, int num_batches_use, int input_length_use, int output_length_use,
+  TrainingData(int batch_size_use, int num_batches_use, int input_length_use, int output_length_use,
             const input::InputEncoder<InputType>* input_enc_use,
             const input::InputEncoder<OutputType>* output_enc_use)
     : batch_size(batch_size_use),

@@ -122,6 +122,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\examples\examples.h" />
     <ClInclude Include="..\src\activation.hpp" />
     <ClInclude Include="..\src\error.hpp" />
     <ClInclude Include="..\src\input.hpp" />
@@ -132,6 +133,8 @@
     <ClInclude Include="..\src\utility.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\examples\iris.cpp" />
+    <ClCompile Include="..\examples\pokemon.cpp" />
     <ClCompile Include="..\src\input.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\matrix.cpp" />

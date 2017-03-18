@@ -39,6 +39,9 @@
     <ClInclude Include="..\src\trainingdata.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\examples\examples.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\input.cpp">
@@ -54,6 +57,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\train.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\examples\pokemon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\examples\iris.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -28,7 +28,7 @@ public:
   class RowType
   {
   public:
-    RowType(std::pair<IteratorType, IteratorType> range)
+    explicit RowType(const std::pair<IteratorType, IteratorType>& range)
       : begin_iterator(range.first),
         end_iterator(range.second)
     {}
@@ -49,7 +49,7 @@ public:
   }
 
 
-  Matrix(const std::vector<VectorType>& v)
+  explicit Matrix(const std::vector<VectorType>& v)
   {
     rows = v.size();
     cols = v[0].size();

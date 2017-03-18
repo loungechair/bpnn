@@ -18,7 +18,6 @@
 
 namespace nn
 {
-// forward declarations
 class Layer;
 class Connection;
 class Network;
@@ -29,56 +28,6 @@ namespace train
 class NetworkTrainer;
 }
 
-class TrainingData;
-
-
-template <typename T>
-class LayerInterface
-{
-public:
-
-  using VectorType = typename Matrix<T>::VectorType;
-  
-  void UpdateActivation(const TrainingData& training_data) = 0;
-
-  T TotalError(const TrainingData& training_data) = 0;
-  T TotalError(const VectorType& target) = 0;
-
-  VectorType GetActivation(int pattern) = 0;
-};
-
-
-template <typename T>
-class ActivationLayer : public LayerInterface<T>
-{
-public:
-
-private:
-  int max_batch_size;
-  int current_batch_size;
-  Matrix<T> net_input;
-  Matrix<T> activation;
-};
-
-template <typename T>
-class InputLayer : public LayerInterface<T>
-{
-public:
-
-private:
-  Matrix<T> *activation;
-};
-
-template <typename T>
-class InputActivationLayer : public LayerInterface<T>
-{
-public:
-
-private:
-  LayerInterface<T>* current_layer;
-  InputLayer input_layer;
-  ActivationLayer activation_layer;
-};
 
 
 class Layer
@@ -87,16 +36,12 @@ class Layer
   
 public:
 
-  Layer(int size_use, int batch_size_use,
-        std::shared_ptr<ActivationFunction> activation_fn_use);
+  Layer(int size_use, int batch_size_use, std::shared_ptr<ActivationFunction> activation_fn_use);
 
-  void SetActivationFunction(std::shared_ptr<ActivationFunction> act_fn)
-  {
-    activation_fn = act_fn;
-  }
+  void SetActivationFunction(std::shared_ptr<ActivationFunction> act_fn) { activation_fn = act_fn; }
   
-  void SetActivation(const dblmatrix& in)   { activation = in; } // for input layers
-  void CalculateActivation();                                    // for hidden layers
+  void SetActivation(const dblmatrix& in) { activation = in; } // for input layers
+  void CalculateActivation();                                  // for hidden layers
 
   int BatchSize() const { return batch_size; }
 
@@ -133,17 +78,7 @@ class Connection
   friend train::NetworkTrainer;
 
 public:
-  Connection(Layer* from, Layer* to)
-    : layer_from(from),
-      layer_to(to),
-      rows(layer_to->Size()),
-      cols(layer_from->Size()),
-      size(rows*cols),
-      weights(rows, cols)
-  {
-    layer_from->AddOutgoingConnection(this);
-    layer_to->AddIncomingConnection(this);
-  }
+  Connection(Layer* from, Layer* to);
 
   int Rows() const { return rows; }
   int Cols() const { return cols; }

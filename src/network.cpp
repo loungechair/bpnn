@@ -39,6 +39,29 @@ Layer::CalculateActivation()
 
 
 
+dblscalar
+Layer::TotalError(const dblmatrix& target_pattern, const ErrorFunction* error_fn)
+{
+  return std::inner_product(activation.begin(), activation.end(), target_pattern.begin(), 0.0,
+                            std::plus<dblscalar>(),
+                            [&](auto x, auto y) { return error_fn->E(x, y); });
+}
+
+
+
+Connection::Connection(Layer* from, Layer* to)
+  : layer_from(from),
+    layer_to(to),
+    rows(layer_to->Size()),
+    cols(layer_from->Size()),
+    size(rows*cols),
+    weights(rows, cols)
+{
+  layer_from->AddOutgoingConnection(this);
+  layer_to->AddIncomingConnection(this);
+}
+
+
 Network::Network(const std::vector<int>& layer_sizes,
   int batch_size_use,
   std::shared_ptr<ActivationFunction> hid_act_fn,
@@ -83,20 +106,13 @@ Network::FeedForward(const dblmatrix& input_pattern)
   return layers.back()->GetActivation();
 }
 
+
+
 dblscalar
 Network::TotalError(const dblmatrix& target_pattern)
 {
   return (last_error = layers.back()->TotalError(target_pattern, err_function.get()));
 }
-
-dblscalar
-Layer::TotalError(const dblmatrix& target_pattern, const ErrorFunction* error_fn)
-{
-  return std::inner_product(activation.begin(), activation.end(), target_pattern.begin(), 0.0,
-    std::plus<dblscalar>(),
-    [&](auto x, auto y) { return error_fn->E(x, y); });
-}
-
 
 
 void
