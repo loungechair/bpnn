@@ -62,19 +62,19 @@ Connection::Connection(Layer* from, Layer* to)
 }
 
 
-Network::Network(const std::vector<int>& layer_sizes,
-  int batch_size_use,
-  std::shared_ptr<ActivationFunction> hid_act_fn,
-  std::shared_ptr<ActivationFunction> out_act_fn,
-  std::shared_ptr<ErrorFunction> err_function_use)
+Network::Network(const std::vector<size_t>& layer_sizes,
+                 int batch_size_use,
+                 std::shared_ptr<ActivationFunction> hid_act_fn,
+                 std::shared_ptr<ActivationFunction> out_act_fn,
+                 std::shared_ptr<ErrorFunction> err_function_use)
   : batch_size(batch_size_use),
     err_function(err_function_use),
     current_epoch(0),
     last_error(0)
 {
-  int num_hid = layer_sizes.size() - 1;
+  size_t num_hid = layer_sizes.size() - 1;
   
-  for (int l = 0; l < num_hid; ++l) {
+  for (size_t l = 0; l < num_hid; ++l) {
     AddLayer(layer_sizes[l], hid_act_fn);
   }
   AddLayer(layer_sizes[num_hid], out_act_fn);

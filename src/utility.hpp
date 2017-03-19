@@ -75,10 +75,10 @@ private:
     auto mm = std::chrono::duration_cast<std::chrono::minutes>(time_duration);
     auto ss = std::chrono::duration_cast<std::chrono::seconds>(time_duration);
 
-    int h = hh.count();
-    int m = mm.count() - 60 * h;
-    int s = ss.count() - 60 * mm.count();
-    int l = time_duration.count() - 1000000 * ss.count();
+    int64_t h = hh.count();
+    int64_t m = mm.count() - 60 * h;
+    int64_t s = ss.count() - 60 * mm.count();
+    int64_t l = time_duration.count() - 1000000 * ss.count();
     l = (l + 500)/1000;
 
     std::ostringstream out;

@@ -175,7 +175,7 @@ class FieldEncoder
 public:
   virtual std::vector<double> EncodeField(const void* field_ptr) = 0;
   virtual void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr) = 0;
-  virtual int Length() const = 0;
+  virtual size_t Length() const = 0;
 };
 
 
@@ -198,8 +198,8 @@ public:
   void Decode(const std::vector<double>& input, InputType* data) const;
   InputType Decode(const std::vector<double>& input) const;
 
-  int Length() const {
-    int length = 0;
+  size_t Length() const {
+    size_t length = 0;
     for (auto& p : encoders) {
       length += p.second->Length();
     }
@@ -227,7 +227,7 @@ public:
     ++p;
   }
 
-  int Length() const { return 1; }
+  size_t Length() const { return 1; }
 };
 
 
@@ -243,7 +243,7 @@ public:
   std::vector<double> EncodeField(const void* field_ptr);
   void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr);
 
-  int Length() const { return empty_pattern.size(); }
+  size_t Length() const { return empty_pattern.size(); }
 
 private:
   int min_value;
@@ -267,7 +267,7 @@ public:
   std::vector<double> EncodeField(const void* field_ptr) override;
   void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr);
 
-  int Length() const { return empty_pattern.size(); }
+  size_t Length() const { return empty_pattern.size(); }
 
 private:
   int max_value;
@@ -345,7 +345,7 @@ public:
     }
   }
 
-  int Length() const { return int_encoder->Length(); }
+  size_t Length() const { return int_encoder->Length(); }
 
 private:
   double on_value;
@@ -368,7 +368,7 @@ public:
   std::vector<double> EncodeField(const void* field_ptr) override;
   void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr) override;
 
-  int Length() const { return 1; }
+  size_t Length() const { return 1; }
 
 private:
   double in_min;
@@ -387,7 +387,7 @@ public:
   std::vector<double> EncodeField(const void* field_ptr) override;
   void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr) override;
 
-  int Length() const { return 1; }
+  size_t Length() const { return 1; }
 
 private:
   double mean;

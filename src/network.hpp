@@ -113,7 +113,7 @@ class Network : public utility::Observable
 public:
   // Network(const std::string& file_name);        // load a network from a file
 
-  Network(const std::vector<int>& layer_sizes,     // create a network with specified layer sizes
+  Network(const std::vector<size_t>& layer_sizes,     // create a network with specified layer sizes
           int batch_size_use,
           std::shared_ptr<ActivationFunction> hid_act_fn,
           std::shared_ptr<ActivationFunction> out_act_fn,
@@ -121,7 +121,7 @@ public:
 
   Network() {} // create an empty network
   
-  void AddLayer(int size, std::shared_ptr<ActivationFunction> act_fn)
+  void AddLayer(size_t size, std::shared_ptr<ActivationFunction> act_fn)
   {
     layers.emplace_back(std::make_shared<Layer>(size, batch_size, act_fn));
   }

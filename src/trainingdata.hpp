@@ -47,9 +47,10 @@ template <typename InputType, typename OutputType>
 class TrainingData
 {
 public:
-  TrainingData(int batch_size_use, int num_batches_use, int input_length_use, int output_length_use,
-            const input::InputEncoder<InputType>* input_enc_use,
-            const input::InputEncoder<OutputType>* output_enc_use)
+  TrainingData(size_t batch_size_use, size_t num_batches_use,
+               size_t input_length_use, size_t output_length_use,
+               const input::InputEncoder<InputType>* input_enc_use,
+               const input::InputEncoder<OutputType>* output_enc_use)
     : batch_size(batch_size_use),
       input_length(input_length_use),
       output_length(output_length_use),
@@ -64,21 +65,20 @@ public:
 
   const std::vector<Batch>& Batches() const { return batches; }
 
-  int AddPair(const InputType& in, const OutputType& out)
+  void AddPair(const InputType& in, const OutputType& out)
   {
     batches[batch_to_add_to].AddPair(input_encoder->Encode(&in), output_encoder->Encode(&out));
     batch_to_add_to = (batch_to_add_to + 1) % num_batches;
     ++num_patterns;
-    return num_patterns;
   }
 
 private:
-  int batch_size;
-  int input_length;
-  int output_length;
-  int num_batches;
-  int num_patterns;
-  int batch_to_add_to;
+  size_t batch_size;
+  size_t input_length;
+  size_t output_length;
+  size_t num_batches;
+  size_t num_patterns;
+  size_t batch_to_add_to;
   std::vector<Batch> batches;
   const input::InputEncoder<InputType>* input_encoder;
   const input::InputEncoder<OutputType>* output_encoder;

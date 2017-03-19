@@ -203,7 +203,7 @@ public:
   template <typename RngType>
   void InitializeWeights(RngType& randgen);
 
-  void NW_WeightAdj()
+  void NguyenWidrowInitialization()
   {
     dblscalar beta = 0.7*pow(layer_to->Size(), 1.0 / (layer_from->Size()));
     weights.NormalizeEachRow(beta);

@@ -75,7 +75,6 @@ BackpropTrainingAlgorithm::Train()
 
     dblscalar total_error = 0;
 
-    // for batch in training_data...
     for (auto& batch = training_data->begin(); batch != training_data->end(); ++batch) {
       const auto& in = batch->Input();
       const auto& targ = batch->Output();
@@ -216,7 +215,7 @@ BackpropConnection::InitializeWeights(RngType& randgen)
 {
   std::transform(begin(weights), end(weights), begin(weights), std::ref(randgen));
 
-  NW_WeightAdj();
+  NguyenWidrowInitialization();
 }
 
 
