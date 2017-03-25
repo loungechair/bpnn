@@ -19,18 +19,18 @@ BackpropTrainingAlgorithm::BackpropTrainingAlgorithm(Network& network_use,
     error_fn(ntr.GetErrorFunction()),
     training_data(nullptr)
 {
-  const auto& x = ntr.GetLayers();
-  const auto& y = ntr.GetConnections();
+  const auto& layers = ntr.GetLayers();
+  const auto& connections = ntr.GetConnections();
 
   std::map<Layer*, std::shared_ptr<BackpropLayer>> layer_to_bp;
 
-  for (auto& l : x) {
+  for (auto& l : layers) {
     auto bp_layer = std::make_shared<BackpropLayer>(ntr, params, l.get(), ntr.GetErrorFunction().get());
     layer_to_bp.insert(std::make_pair(l.get(), bp_layer));
     
     bp_layers.push_back(bp_layer);
   }
-  for (auto& c : y) {
+  for (auto& c : connections) {
     auto from_layer = ntr.GetConnectionFromLayer(c);
     auto to_layer = ntr.GetConnectionToLayer(c);
     auto bp_from_layer = layer_to_bp[from_layer].get();

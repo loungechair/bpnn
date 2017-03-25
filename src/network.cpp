@@ -49,7 +49,7 @@ Layer::TotalError(const dblmatrix& target_pattern, const ErrorFunction* error_fn
 
 
 
-Connection::Connection(Layer* from, Layer* to)
+FeedForwardConnection::FeedForwardConnection(Layer* from, Layer* to)
   : layer_from(from),
     layer_to(to),
     rows(layer_to->Size()),
@@ -118,7 +118,13 @@ Network::TotalError(const dblmatrix& target_pattern)
 void
 Network::AddConnection(Layer* from, Layer *to)
 {
-  connections.push_back(std::make_shared<Connection>(from, to));
+  connections.push_back(std::make_shared<FeedForwardConnection>(from, to));
+}
+
+void
+Network::AddConnection(size_t from, size_t to)
+{
+  connections.push_back(std::make_shared<FeedForwardConnection>(layers[from].get(), layers[to].get()));
 }
 
 

@@ -2,9 +2,11 @@
 
 #include <vector>
 #include <array>
+#include <iostream>
 
 #include <mkl_cblas.h>
 
+#include "errormsg.hpp"
 
 namespace nn
 {
@@ -15,8 +17,13 @@ typedef std::vector<dblscalar> dblvector;
 typedef Matrix<dblscalar> dblmatrix;
 
 template <typename T>
+using Vector = std::vector<T>;
+
+template <typename T>
 class Matrix
 {
+  CHECK_TEMPLATE_REAL_TYPE(T, Matrix);
+
 public:
   
   typedef T ValueType;

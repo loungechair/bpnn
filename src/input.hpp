@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include <type_traits>
+
 #include <cstddef>
 #include <cmath>
 
@@ -212,18 +214,20 @@ private:
 
 
 
-
+template <typename T>
 class DoubleDefaultEncoder : public FieldEncoder
 {
+  static_assert(std::is_floating_point<T>::value, "Can only use double or float");
+
 public:
-  std::vector<double> EncodeField(const void *field_ptr)
+  std::vector<T> EncodeField(const void *field_ptr)
   {
-    return std::vector<double>(1, *(double *)field_ptr);
+    return std::vector<T>(1, *(T *)field_ptr);
   }
 
-  void DecodeField(std::vector<double>::const_iterator& p, const void* field_ptr)
+  void DecodeField(typename std::vector<T>::const_iterator& p, const void* field_ptr)
   {
-    *(double *)field_ptr = *p;
+    *(T *)field_ptr = *p;
     ++p;
   }
 

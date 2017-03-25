@@ -44,7 +44,7 @@ public:
 
 
   std::vector<std::shared_ptr<Layer>> GetLayers() const { return network.layers; }
-  std::vector<std::shared_ptr<Connection>> GetConnections() const { return network.connections; }
+  auto GetConnections() const { return network.connections; }
 
   auto GetErrorFunction() const { return network.err_function; }
 
@@ -66,8 +66,8 @@ public:
 
   //double* GetConnectionWeightPtr(std::shared_ptr<Connection> c) { return &(c->weights[0]); }
 
-  Layer* GetConnectionFromLayer(std::shared_ptr<Connection> c) { return c->layer_from; }
-  Layer* GetConnectionToLayer(std::shared_ptr<Connection> c) { return c->layer_to; }
+  Layer* GetConnectionFromLayer(std::shared_ptr<Connection> c) { return c->LayerFrom(); }
+  Layer* GetConnectionToLayer(std::shared_ptr<Connection> c) { return c->LayerTo(); }
 
 private:
   Network& network;

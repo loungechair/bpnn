@@ -113,12 +113,12 @@ PokemonNetwork()
   nn_ADD_FIELD_ENCODER(output_encoder, PokemonOutput, type2, type2_encoder);
 
   nn::input::InputEncoder<PokemonInput> input_encoder;
-  auto hp_encoder = std::make_shared<nn::input::DoubleScaleEncoder>(1, 255, -1, 1);
-  auto attack_encoder = std::make_shared<nn::input::DoubleScaleEncoder>(5, 190, -1, 1);
-  auto defense_encoder = std::make_shared<nn::input::DoubleScaleEncoder>(5, 230, -1, 1);
-  auto sp_attack_encoder = std::make_shared<nn::input::DoubleScaleEncoder>(10, 194, -1, 1);
-  auto sp_defense_encoder = std::make_shared<nn::input::DoubleScaleEncoder>(20, 230, -1, 1);
-  auto speed_encoder = std::make_shared<nn::input::DoubleScaleEncoder>(5, 180, -1, 1);
+  auto hp_encoder = std::make_shared<nn::input::DoubleScaleEncoder>        (/* 1*/ 0, 255, -5, 5);
+  auto attack_encoder = std::make_shared<nn::input::DoubleScaleEncoder>    (/* 5*/ 0, 190, -5, 5);
+  auto defense_encoder = std::make_shared<nn::input::DoubleScaleEncoder>   (/* 5*/ 0, 230, -5, 5);
+  auto sp_attack_encoder = std::make_shared<nn::input::DoubleScaleEncoder> (/*10*/ 0, 194, -5, 5);
+  auto sp_defense_encoder = std::make_shared<nn::input::DoubleScaleEncoder>(/*20*/ 0, 230, -5, 5);
+  auto speed_encoder = std::make_shared<nn::input::DoubleScaleEncoder>     (/* 5*/ 0, 180, -5, 5);
 
   nn_ADD_FIELD_ENCODER(input_encoder, PokemonInput, hp, hp_encoder);
   nn_ADD_FIELD_ENCODER(input_encoder, PokemonInput, attack, attack_encoder);
@@ -127,8 +127,8 @@ PokemonNetwork()
   nn_ADD_FIELD_ENCODER(input_encoder, PokemonInput, sp_defense, sp_defense_encoder);
   nn_ADD_FIELD_ENCODER(input_encoder, PokemonInput, speed, speed_encoder);
 
-  const int BATCH_SIZE = 200;
-  const int NUM_BATCHES = 4;
+  const int BATCH_SIZE = 100;
+  const int NUM_BATCHES = 8;
 
   nn::TrainingData<PokemonInput, PokemonOutput> td(BATCH_SIZE, NUM_BATCHES, input_encoder.Length(), output_encoder.Length(), &input_encoder, &output_encoder);
 
@@ -140,17 +140,19 @@ PokemonNetwork()
   nn::utility::Timer train_timer;
 
   auto hid_act = std::make_shared<nn::TanhActivation>();
-  auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
-  auto err_function = std::make_shared<nn::CrossEntropyError>();
+  //auto out_act = std::make_shared<nn::SigmoidActivation>(0, 1);
+  //auto err_function = std::make_shared<nn::CrossEntropyError>();
+  auto out_act = std::make_shared<nn::LinearActivation>();
+  auto err_function = std::make_shared<nn::SquaredError>();
 
-  nn::Network network({ input_encoder.Length(), 290, 230, output_encoder.Length() }, BATCH_SIZE, hid_act, out_act, err_function);
-  nn::train::BackpropTrainingParameters params{ 0.0005, 0.5, 0, false, 10'000, 0.1 };
+  nn::Network network({ input_encoder.Length(), 350, 350, output_encoder.Length() }, BATCH_SIZE, hid_act, out_act, err_function);
+  nn::train::BackpropTrainingParameters params{ 0.00007, 0.0, 0, false, 1'000, 0.1 };
 
   //nn::ErrorStatistics<double> err_stats(10, network);
   nn::ErrorPrinter err_printer(25, network, &train_timer);
 
   //network.Attach(&err_stats);
-  network.Attach(&err_printer);
+  //network.Attach(&err_printer);
 
 
   auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(network, params);
@@ -162,28 +164,28 @@ PokemonNetwork()
   tr->Train();
   train_timer.Stop();
 
-  int fails = 0;
+  //int fails = 0;
 
-  for (auto& batch : td.Batches()) {
-    const auto& output = network.FeedForward(batch.Input());
-    const auto& target = batch.Output();
+  //for (auto& batch : td.Batches()) {
+  //  const auto& output = network.FeedForward(batch.Input());
+  //  const auto& target = batch.Output();
 
-    PokemonOutput outp;
-    PokemonOutput targp;
+  //  PokemonOutput outp;
+  //  PokemonOutput targp;
 
-    for (int i = 0; i < output.Rows(); ++i) {
-      output_encoder.Decode(output.GetRowValues(i), &outp);
-      output_encoder.Decode(target.GetRowValues(i), &targp);
-      if (outp.name == targp.name && outp.type1 == targp.type1 && outp.type2 == targp.type2) {
-        std::cout << "     ";
-      } else {
-        std::cout << "FAIL ";
-        ++fails;
-      }
-      std::cout << "Target: (" << targp << ") -> (" << outp << ")" << std::endl;
-    }
-  }
+  //  for (int i = 0; i < output.Rows(); ++i) {
+  //    output_encoder.Decode(output.GetRowValues(i), &outp);
+  //    output_encoder.Decode(target.GetRowValues(i), &targp);
+  //    if (outp.name == targp.name && outp.type1 == targp.type1 && outp.type2 == targp.type2) {
+  //      std::cout << "     ";
+  //    } else {
+  //      std::cout << "FAIL ";
+  //      ++fails;
+  //    }
+  //    std::cout << "Target: (" << targp << ") -> (" << outp << ")" << std::endl;
+  //  }
+  //}
 
   std::cout << "Total time was " << train_timer.GetElapsedTimeAsString() << std::endl;
-  std::cout << "Num fails: " << fails << std::endl;
+  //std::cout << "Num fails: " << fails << std::endl;
 }

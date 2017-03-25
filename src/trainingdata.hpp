@@ -3,6 +3,10 @@
 #include "matrix.hpp"
 #include "input.hpp"
 
+#include <map>
+#include <vector>
+#include <list>
+
 namespace nn
 {
 
@@ -41,6 +45,82 @@ private:
   dblmatrix output;
 };
 
+
+namespace td_test
+{
+
+
+class ActivationPattern
+{
+  struct ActivationRecord
+  {
+    static const int DEFAULT_START_TIME = -10000;
+    static const int DEFAULT_END_TIME   = 10000;
+    double start_time;
+    double end_time;
+    dblvector activation;
+
+    ActivationRecord()
+      : start_time(DEFAULT_START_TIME),
+        end_time(DEFAULT_END_TIME)
+    {}
+
+    ActivationRecord(const dblvector& activation_use)
+      : start_time(DEFAULT_START_TIME),
+        end_time(DEFAULT_END_TIME),
+        activation(activation_use)
+    {}
+
+    ActivationRecord(double start_time_use, double end_time_use, const dblvector& activation_use)
+      : start_time(start_time_use),
+        end_time(end_time_use),
+        activation(activation_use)
+    {}
+
+    bool operator<(const ActivationRecord& b) const {
+      return start_time < b.start_time;
+    }
+    bool operator==(double t) const
+    {
+      return (start_time <= t && t <= end_time);
+    }
+  };
+
+public:
+  dblvector GetActivationValue(const std::string& layer_name) const;
+  dblvector GetActivationValue(const std::string& layer_name, double time) const;
+
+  void AddActivationValue(const std::string& layer_name, const nn::dblvector& values);
+  void AddActivationValue(const std::string& layer_name, double start_time, double stop_time,
+                          const nn::dblvector& values);
+private:
+  std::map<std::string, std::list<ActivationRecord>> data;
+};
+
+
+class TrainingData
+{
+public:
+  bool HasActivation(const std::string& layer_name, double time) const;
+  const dblmatrix& GetActivation(const std::string& layer_name, double time) const;
+
+private:
+};
+
+
+
+template <typename InputType, typename OutputType>
+class TrainingDataBuilder
+{
+public:
+
+  void AddPair(const InputType& input_data, const OutputType& output_data);
+  TrainingData GetTrainingData() const;
+
+private:
+};
+
+} // namespace td_test
 
 
 template <typename InputType, typename OutputType>
@@ -83,6 +163,7 @@ private:
   const input::InputEncoder<InputType>* input_encoder;
   const input::InputEncoder<OutputType>* output_encoder;
 };
+
 
 
 } // namespace nn
