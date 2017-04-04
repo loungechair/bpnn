@@ -77,7 +77,7 @@ public:
 
   int AppendRow(const dblmatrix& new_row)
   {
-    if (new_row.size() != cols) {
+    if (new_row.Size() != cols) {
       throw "Wrong vector length!";
     }
     rows++;

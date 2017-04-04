@@ -1,5 +1,5 @@
 # CXX=clang++ -std=c++14
-CXX=g++
+CXX=clang++
 CXXFLAGS=-O3 -std=c++14
 #CXXFLAGS=-O3 -Wall
 LDFLAGS=-L/usr/lib64/atlas -ltatlas
