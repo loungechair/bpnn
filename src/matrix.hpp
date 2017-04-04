@@ -2,8 +2,17 @@
 
 #include <vector>
 #include <array>
+#include <iostream>
 
-#include <mkl_cblas.h>
+#ifdef __linux__
+extern "C" {
+#  include <cblas.h>
+}
+#elif _WIN32
+#  include <mkl_cblas.h>
+#else
+#  error "Unsupported OS!"
+#endif
 
 
 namespace nn

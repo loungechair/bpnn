@@ -75,7 +75,7 @@ BackpropTrainingAlgorithm::Train()
 
     dblscalar total_error = 0;
 
-    for (auto& batch = training_data->begin(); batch != training_data->end(); ++batch) {
+    for (auto batch = training_data->begin(); batch != training_data->end(); ++batch) {
       const auto& in = batch->Input();
       const auto& targ = batch->Output();
 

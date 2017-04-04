@@ -8,7 +8,8 @@ sources = network.cpp \
 	matrix.cpp \
 	main.cpp \
 	train.cpp \
-	input.cpp
+	input.cpp \
+        ../examples/iris.cpp
 
 obj = $(sources:.cpp=.o)
 
@@ -18,7 +19,8 @@ headers = network.hpp \
 	activation.hpp \
 	train.hpp \
 	input.hpp \
-	utility.hpp
+	utility.hpp \
+        ../examples/examples.h
 
 nn : $(obj)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
@@ -36,7 +38,7 @@ clean :
 
 # generate dependencies
 %.dep: %.cpp
-	$(CXX) -MM $< | sed 's/$*\.o[ ]*/& $@/g' > $@
+	$(CXX) -MM $< | sed 's|$*\.o[ ]*|& $@|g' > $@
 
 # include dependencies
 ifneq ($(MAKECMDGOALS),clean)

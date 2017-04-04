@@ -28,7 +28,7 @@ struct IrisOutput
 
 void ReadIrisData(std::vector<IrisInput>& input_data, std::vector<IrisOutput>& output_data)
 {
-  std::ifstream in("E:/Dropbox/MLDatasets/iris.data");
+  std::ifstream in("../examples/iris.data");
   if (!in) {
     std::cerr << "Couldn't find file!";
     return;
@@ -113,7 +113,7 @@ void IrisNetwork()
   network.Attach(&err_stats);
   network.Attach(&err_printer);
 
-  nn::train::BackpropTrainingParameters params{ 0.001, 0.9, 0, true, 100'000, 0.1 };
+  nn::train::BackpropTrainingParameters params{ 0.001, 0.9, 0, true, 100000, 0.1 };
 
   auto tr = std::make_unique<nn::train::BackpropTrainingAlgorithm>(network, params);
 
@@ -124,20 +124,20 @@ void IrisNetwork()
   tr->Train();
   train_timer.Stop();
 
-  for (auto& batch : training_data.Batches()) {
+  for (const auto& batch : training_data.Batches()) {
     auto& in = batch.Input();
     auto& targ = batch.Output();
 
     std::cout << "Batch Size == " << in.Rows() << std::endl;
 
-    auto& output = network.FeedForward(in);
+    const auto& output = network.FeedForward(in);
 
     for (int pattern = 0; pattern < output.Rows(); ++pattern) {
       //auto& in_p = input_encoder.Decode(in.GetRowValues(pattern));
       //auto& out_p = output_encoder.Decode(output.GetRowValues(pattern));
 
-      auto& in_p = in.GetRowValues(pattern);
-      auto& out_p = output.GetRowValues(pattern);
+      const auto& in_p = in.GetRowValues(pattern);
+      const auto& out_p = output.GetRowValues(pattern);
 
       std::cout << "{";
       for (auto& x : in_p) {

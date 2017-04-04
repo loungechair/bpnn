@@ -63,8 +63,10 @@ public:
   }
 
 private:
-  std::chrono::time_point<std::chrono::steady_clock> start_time;
-  std::chrono::time_point<std::chrono::steady_clock> end_time;
+  //std::chrono::time_point<std::chrono::steady_clock> start_time;
+  //std::chrono::time_point<std::chrono::steady_clock> end_time;
+  std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+  std::chrono::time_point<std::chrono::high_resolution_clock> end_time;
   std::chrono::microseconds total_time;
   bool running;
   double elapsed_time;

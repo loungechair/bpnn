@@ -3,15 +3,6 @@
 #include <iostream>
 #include <cstring>
 
-#ifdef _WIN32
-#  include <mkl_cblas.h>
-#elif __linux__
-extern "C" {
-#  include <cblas.h>
-}
-#else
-#  error "Unsupported OS!"
-#endif
 
 namespace nn
 {
