@@ -58,14 +58,6 @@ public:
   dblscalar* GetLayerActivationPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
   dblscalar* GetLayerNetInputPtr(std::shared_ptr<Layer> layer) { return layer->activation.GetPtr(); }
 
-  //std::vector<Connection *>
-  //GetLayerIncomingConnections(std::shared_ptr<Layer> layer) { return layer->incoming; }
-
-  //std::vector<Connection *>
-  //GetLayerOutgoingConnections(std::shared_ptr<Layer> layer) { return layer->outgoing; }
-
-  //double* GetConnectionWeightPtr(std::shared_ptr<Connection> c) { return &(c->weights[0]); }
-
   Layer* GetConnectionFromLayer(std::shared_ptr<Connection> c) { return c->LayerFrom(); }
   Layer* GetConnectionToLayer(std::shared_ptr<Connection> c) { return c->LayerTo(); }
 

@@ -229,7 +229,7 @@ private:
 
 
 
-class Layer //: public LayerInterface<double>
+class Layer
 {
   friend train::NetworkTrainer;
   
